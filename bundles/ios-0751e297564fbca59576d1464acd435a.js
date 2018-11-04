@@ -1484,64 +1484,64 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
     get Pedometer() {
       {
-        return _require(_dependencyMap[51]);
+        return _require(_dependencyMap[9]).Pedometer;
       }
     },
 
     get Permissions() {
-      return _require(_dependencyMap[52]).Permissions;
+      return _require(_dependencyMap[51]).Permissions;
     },
 
     get Print() {
-      return _require(_dependencyMap[53]).Print;
+      return _require(_dependencyMap[52]).Print;
     },
 
     get Facebook() {
-      return _require(_dependencyMap[54]).default;
+      return _require(_dependencyMap[53]).default;
     },
 
     get FacebookAds() {
-      return _require(_dependencyMap[55]);
+      return _require(_dependencyMap[54]);
     },
 
     get IntentLauncherAndroid() {
-      return _require(_dependencyMap[56]);
+      return _require(_dependencyMap[55]);
     },
 
     get ScreenOrientation() {
-      return _require(_dependencyMap[57]);
+      return _require(_dependencyMap[56]);
     },
 
     get SecureStore() {
-      return _require(_dependencyMap[58]);
+      return _require(_dependencyMap[57]);
     },
 
     get Segment() {
-      return _require(_dependencyMap[59]).Segment;
+      return _require(_dependencyMap[58]).Segment;
     },
 
     get SMS() {
-      return _require(_dependencyMap[60]).SMS;
+      return _require(_dependencyMap[59]).SMS;
     },
 
     get Speech() {
-      return _require(_dependencyMap[61]);
+      return _require(_dependencyMap[60]);
     },
 
     get SplashScreen() {
-      return _require(_dependencyMap[62]);
+      return _require(_dependencyMap[61]);
     },
 
     get StoreReview() {
-      return _require(_dependencyMap[63]);
+      return _require(_dependencyMap[62]);
     },
 
     get Updates() {
-      return _require(_dependencyMap[64]);
+      return _require(_dependencyMap[63]);
     },
 
     get Util() {
-      return _require(_dependencyMap[65]);
+      return _require(_dependencyMap[64]);
     }
 
   };
@@ -1551,7 +1551,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     global.__expo = module.exports;
     global.Expo = module.exports;
   }
-},12,[13,318,331,332,309,14,340,341,350,351,344,360,368,369,345,372,390,347,395,986,399,401,403,408,988,410,423,427,367,429,501,503,504,505,508,509,510,512,585,338,342,586,587,588,790,791,366,792,319,793,794,992,796,533,798,799,808,809,810,811,813,815,349,816,817,818]);
+},12,[13,318,331,332,309,14,340,341,350,351,344,360,368,369,345,372,390,347,395,398,399,401,403,408,409,410,423,427,367,429,501,503,504,505,508,509,510,512,585,338,342,586,587,588,790,791,366,792,319,793,794,796,533,798,799,808,809,810,811,813,815,349,816,817,818]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   var _reactNative = _require(_dependencyMap[0]);
 
@@ -1967,7 +1967,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
   };
   module.exports = ReactNative;
-},14,[15,957,42,159,165,963,964,965,225,962,238,240,241,242,243,227,966,245,967,250,968,960,970,971,207,255,972,258,973,260,232,261,262,266,974,166,270,976,977,168,278,961,176,220,133,978,233,979,281,85,86,177,282,288,289,290,980,291,292,981,114,113,202,46,247,294,185,211,212,295,70,296,264,89,112,297,982,299,983,111,21,984,172,97,302,985,304,37,93,17,958,128,146,308,43,136,208,135]);
+},14,[15,16,42,159,165,222,223,224,225,205,238,240,241,242,243,227,244,245,248,250,251,109,253,254,207,255,257,258,259,260,232,261,262,266,268,166,270,276,277,168,278,175,176,220,133,279,233,280,281,85,86,177,282,288,289,290,287,291,292,293,114,113,202,46,247,294,185,211,212,295,70,296,264,89,112,297,298,299,300,111,21,301,172,97,302,303,304,37,93,17,25,128,146,308,43,136,208,135]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -2002,27 +2002,42 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
   var NativeModules = _require(_dependencyMap[0]);
 
-  var RCTDeviceEventEmitter = _require(_dependencyMap[1]);
+  var Promise = _require(_dependencyMap[1]);
 
-  var RCTAccessibilityInfo = NativeModules.AccessibilityInfo;
-  var TOUCH_EXPLORATION_EVENT = 'touchExplorationDidChange';
+  var RCTDeviceEventEmitter = _require(_dependencyMap[2]);
+
+  var AccessibilityManager = NativeModules.AccessibilityManager;
+  var VOICE_OVER_EVENT = 'voiceOverDidChange';
+  var ANNOUNCEMENT_DID_FINISH_EVENT = 'announcementDidFinish';
 
   var _subscriptions = new Map();
 
   var AccessibilityInfo = {
     fetch: function fetch() {
       return new Promise(function (resolve, reject) {
-        RCTAccessibilityInfo.isTouchExplorationEnabled(function (resp) {
-          resolve(resp);
-        });
+        AccessibilityManager.getCurrentVoiceOverState(resolve, reject);
       });
     },
     addEventListener: function addEventListener(eventName, handler) {
-      var listener = RCTDeviceEventEmitter.addListener(TOUCH_EXPLORATION_EVENT, function (enabled) {
-        handler(enabled);
-      });
+      var listener = void 0;
+
+      if (eventName === 'change') {
+        listener = RCTDeviceEventEmitter.addListener(VOICE_OVER_EVENT, handler);
+      } else if (eventName === 'announcementFinished') {
+        listener = RCTDeviceEventEmitter.addListener(ANNOUNCEMENT_DID_FINISH_EVENT, handler);
+      }
 
       _subscriptions.set(handler, listener);
+
+      return {
+        remove: AccessibilityInfo.removeEventListener.bind(null, eventName, handler)
+      };
+    },
+    setAccessibilityFocus: function setAccessibilityFocus(reactTag) {
+      AccessibilityManager.setAccessibilityFocus(reactTag);
+    },
+    announceForAccessibility: function announceForAccessibility(announcement) {
+      AccessibilityManager.announceForAccessibility(announcement);
     },
     removeEventListener: function removeEventListener(eventName, handler) {
       var listener = _subscriptions.get(handler);
@@ -2037,7 +2052,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     }
   };
   module.exports = AccessibilityInfo;
-},957,[17,37]);
+},16,[17,32,37]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -2611,7 +2626,7 @@ __d(function (global, _require2, module, exports, _dependencyMap) {
   var FRAME_DURATION = 16.666666666666668;
   var IDLE_CALLBACK_FRAME_DEADLINE = 1;
   var MAX_TIMER_DURATION_MS = 60000;
-  var IS_ANDROID = true;
+  var IS_ANDROID = false;
   var ANDROID_LONG_TIMER_MESSAGE = "Setting a timer for a long period of time, i.e. multiple minutes, is a performance and correctness issue on Android as it keeps the timer module awake, and timers can only be called when the app is in the foreground. See https://github.com/facebook/react-native/issues/12981 for more info.";
   var callbacks = [];
   var types = [];
@@ -2932,18 +2947,32 @@ __d(function (global, _require2, module, exports, _dependencyMap) {
   } else {
     module.exports = JSTimers;
   }
-},24,[958,21,15,17,26,29]);
+},24,[25,21,15,17,26,29]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
   var NativeModules = _require(_dependencyMap[0]);
 
   var Platform = {
-    OS: 'android',
+    OS: 'ios',
 
     get Version() {
       var constants = NativeModules.PlatformConstants;
-      return constants && constants.Version;
+      return constants && constants.osVersion;
+    },
+
+    get isPad() {
+      var constants = NativeModules.PlatformConstants;
+      return constants ? constants.interfaceIdiom === 'pad' : false;
+    },
+
+    get isTVOS() {
+      return Platform.isTV;
+    },
+
+    get isTV() {
+      var constants = NativeModules.PlatformConstants;
+      return constants ? constants.interfaceIdiom === 'tv' : false;
     },
 
     get isTesting() {
@@ -2951,17 +2980,12 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       return constants && constants.isTesting;
     },
 
-    get isTV() {
-      var constants = NativeModules.PlatformConstants;
-      return constants && constants.uiMode === 'tv';
-    },
-
     select: function select(obj) {
-      return 'android' in obj ? obj.android : obj.default;
+      return 'ios' in obj ? obj.ios : obj.default;
     }
   };
   module.exports = Platform;
-},958,[17]);
+},25,[17]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -3081,6 +3105,359 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
   module.exports = defineLazyObjectProperty;
 },31,[]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var Promise = _require(_dependencyMap[0]);
+
+  module.exports = Promise;
+},32,[33]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var Promise = _require(_dependencyMap[0]);
+
+  _require(_dependencyMap[1]);
+
+  Promise.prototype['finally'] = function (onSettled) {
+    return this.then(onSettled, onSettled);
+  };
+
+  module.exports = Promise;
+},33,[34,36]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var Promise = _require(_dependencyMap[0]);
+
+  module.exports = Promise;
+  var TRUE = valuePromise(true);
+  var FALSE = valuePromise(false);
+  var NULL = valuePromise(null);
+  var UNDEFINED = valuePromise(undefined);
+  var ZERO = valuePromise(0);
+  var EMPTYSTRING = valuePromise('');
+
+  function valuePromise(value) {
+    var p = new Promise(Promise._61);
+    p._65 = 1;
+    p._55 = value;
+    return p;
+  }
+
+  Promise.resolve = function (value) {
+    if (value instanceof Promise) return value;
+    if (value === null) return NULL;
+    if (value === undefined) return UNDEFINED;
+    if (value === true) return TRUE;
+    if (value === false) return FALSE;
+    if (value === 0) return ZERO;
+    if (value === '') return EMPTYSTRING;
+
+    if (typeof value === 'object' || typeof value === 'function') {
+      try {
+        var then = value.then;
+
+        if (typeof then === 'function') {
+          return new Promise(then.bind(value));
+        }
+      } catch (ex) {
+        return new Promise(function (resolve, reject) {
+          reject(ex);
+        });
+      }
+    }
+
+    return valuePromise(value);
+  };
+
+  Promise.all = function (arr) {
+    var args = Array.prototype.slice.call(arr);
+    return new Promise(function (resolve, reject) {
+      if (args.length === 0) return resolve([]);
+      var remaining = args.length;
+
+      function res(i, val) {
+        if (val && (typeof val === 'object' || typeof val === 'function')) {
+          if (val instanceof Promise && val.then === Promise.prototype.then) {
+            while (val._65 === 3) {
+              val = val._55;
+            }
+
+            if (val._65 === 1) return res(i, val._55);
+            if (val._65 === 2) reject(val._55);
+            val.then(function (val) {
+              res(i, val);
+            }, reject);
+            return;
+          } else {
+            var then = val.then;
+
+            if (typeof then === 'function') {
+              var p = new Promise(then.bind(val));
+              p.then(function (val) {
+                res(i, val);
+              }, reject);
+              return;
+            }
+          }
+        }
+
+        args[i] = val;
+
+        if (--remaining === 0) {
+          resolve(args);
+        }
+      }
+
+      for (var i = 0; i < args.length; i++) {
+        res(i, args[i]);
+      }
+    });
+  };
+
+  Promise.reject = function (value) {
+    return new Promise(function (resolve, reject) {
+      reject(value);
+    });
+  };
+
+  Promise.race = function (values) {
+    return new Promise(function (resolve, reject) {
+      values.forEach(function (value) {
+        Promise.resolve(value).then(resolve, reject);
+      });
+    });
+  };
+
+  Promise.prototype['catch'] = function (onRejected) {
+    return this.then(null, onRejected);
+  };
+},34,[35]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  function noop() {}
+
+  var LAST_ERROR = null;
+  var IS_ERROR = {};
+
+  function getThen(obj) {
+    try {
+      return obj.then;
+    } catch (ex) {
+      LAST_ERROR = ex;
+      return IS_ERROR;
+    }
+  }
+
+  function tryCallOne(fn, a) {
+    try {
+      return fn(a);
+    } catch (ex) {
+      LAST_ERROR = ex;
+      return IS_ERROR;
+    }
+  }
+
+  function tryCallTwo(fn, a, b) {
+    try {
+      fn(a, b);
+    } catch (ex) {
+      LAST_ERROR = ex;
+      return IS_ERROR;
+    }
+  }
+
+  module.exports = Promise;
+
+  function Promise(fn) {
+    if (typeof this !== 'object') {
+      throw new TypeError('Promises must be constructed via new');
+    }
+
+    if (typeof fn !== 'function') {
+      throw new TypeError('Promise constructor\'s argument is not a function');
+    }
+
+    this._40 = 0;
+    this._65 = 0;
+    this._55 = null;
+    this._72 = null;
+    if (fn === noop) return;
+    doResolve(fn, this);
+  }
+
+  Promise._37 = null;
+  Promise._87 = null;
+  Promise._61 = noop;
+
+  Promise.prototype.then = function (onFulfilled, onRejected) {
+    if (this.constructor !== Promise) {
+      return safeThen(this, onFulfilled, onRejected);
+    }
+
+    var res = new Promise(noop);
+    handle(this, new Handler(onFulfilled, onRejected, res));
+    return res;
+  };
+
+  function safeThen(self, onFulfilled, onRejected) {
+    return new self.constructor(function (resolve, reject) {
+      var res = new Promise(noop);
+      res.then(resolve, reject);
+      handle(self, new Handler(onFulfilled, onRejected, res));
+    });
+  }
+
+  function handle(self, deferred) {
+    while (self._65 === 3) {
+      self = self._55;
+    }
+
+    if (Promise._37) {
+      Promise._37(self);
+    }
+
+    if (self._65 === 0) {
+      if (self._40 === 0) {
+        self._40 = 1;
+        self._72 = deferred;
+        return;
+      }
+
+      if (self._40 === 1) {
+        self._40 = 2;
+        self._72 = [self._72, deferred];
+        return;
+      }
+
+      self._72.push(deferred);
+
+      return;
+    }
+
+    handleResolved(self, deferred);
+  }
+
+  function handleResolved(self, deferred) {
+    setImmediate(function () {
+      var cb = self._65 === 1 ? deferred.onFulfilled : deferred.onRejected;
+
+      if (cb === null) {
+        if (self._65 === 1) {
+          resolve(deferred.promise, self._55);
+        } else {
+          reject(deferred.promise, self._55);
+        }
+
+        return;
+      }
+
+      var ret = tryCallOne(cb, self._55);
+
+      if (ret === IS_ERROR) {
+        reject(deferred.promise, LAST_ERROR);
+      } else {
+        resolve(deferred.promise, ret);
+      }
+    });
+  }
+
+  function resolve(self, newValue) {
+    if (newValue === self) {
+      return reject(self, new TypeError('A promise cannot be resolved with itself.'));
+    }
+
+    if (newValue && (typeof newValue === 'object' || typeof newValue === 'function')) {
+      var then = getThen(newValue);
+
+      if (then === IS_ERROR) {
+        return reject(self, LAST_ERROR);
+      }
+
+      if (then === self.then && newValue instanceof Promise) {
+        self._65 = 3;
+        self._55 = newValue;
+        finale(self);
+        return;
+      } else if (typeof then === 'function') {
+        doResolve(then.bind(newValue), self);
+        return;
+      }
+    }
+
+    self._65 = 1;
+    self._55 = newValue;
+    finale(self);
+  }
+
+  function reject(self, newValue) {
+    self._65 = 2;
+    self._55 = newValue;
+
+    if (Promise._87) {
+      Promise._87(self, newValue);
+    }
+
+    finale(self);
+  }
+
+  function finale(self) {
+    if (self._40 === 1) {
+      handle(self, self._72);
+      self._72 = null;
+    }
+
+    if (self._40 === 2) {
+      for (var i = 0; i < self._72.length; i++) {
+        handle(self, self._72[i]);
+      }
+
+      self._72 = null;
+    }
+  }
+
+  function Handler(onFulfilled, onRejected, promise) {
+    this.onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : null;
+    this.onRejected = typeof onRejected === 'function' ? onRejected : null;
+    this.promise = promise;
+  }
+
+  function doResolve(fn, promise) {
+    var done = false;
+    var res = tryCallTwo(fn, function (value) {
+      if (done) return;
+      done = true;
+      resolve(promise, value);
+    }, function (reason) {
+      if (done) return;
+      done = true;
+      reject(promise, reason);
+    });
+
+    if (!done && res === IS_ERROR) {
+      done = true;
+      reject(promise, LAST_ERROR);
+    }
+  }
+},35,[]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var Promise = _require(_dependencyMap[0]);
+
+  module.exports = Promise;
+
+  Promise.prototype.done = function (onFulfilled, onRejected) {
+    var self = arguments.length ? this.then.apply(this, arguments) : this;
+    self.then(null, function (err) {
+      setTimeout(function () {
+        throw err;
+      }, 0);
+    });
+  };
+},36,[35]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -3394,7 +3771,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     getDefaultProps: function getDefaultProps() {
       return {
         animating: true,
-        color: undefined,
+        color: GRAY,
         hidesWhenStopped: true,
         size: 'small'
       };
@@ -3434,10 +3811,17 @@ __d(function (global, _require, module, exports, _dependencyMap) {
           onLayout: onLayout,
           style: [styles.container, style]
         },
-        React.createElement(ProgressBarAndroid, nativeProps)
+        React.createElement(RCTActivityIndicator, nativeProps)
       );
     }
   });
+  {
+    RCTActivityIndicator = requireNativeComponent('RCTActivityIndicatorView', ActivityIndicator, {
+      nativeOnly: {
+        activityIndicatorViewStyle: true
+      }
+    });
+  }
   var styles = StyleSheet.create({
     container: {
       alignItems: 'center',
@@ -3453,7 +3837,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     }
   });
   module.exports = ActivityIndicator;
-},42,[43,45,958,960,120,103,111,133,135,157,146]);
+},42,[43,45,25,109,120,103,111,133,135,157,146]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -9186,359 +9570,6 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   };
 },61,[]);
 __d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  var Promise = _require(_dependencyMap[0]);
-
-  module.exports = Promise;
-},32,[33]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  var Promise = _require(_dependencyMap[0]);
-
-  _require(_dependencyMap[1]);
-
-  Promise.prototype['finally'] = function (onSettled) {
-    return this.then(onSettled, onSettled);
-  };
-
-  module.exports = Promise;
-},33,[34,36]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  var Promise = _require(_dependencyMap[0]);
-
-  module.exports = Promise;
-  var TRUE = valuePromise(true);
-  var FALSE = valuePromise(false);
-  var NULL = valuePromise(null);
-  var UNDEFINED = valuePromise(undefined);
-  var ZERO = valuePromise(0);
-  var EMPTYSTRING = valuePromise('');
-
-  function valuePromise(value) {
-    var p = new Promise(Promise._61);
-    p._65 = 1;
-    p._55 = value;
-    return p;
-  }
-
-  Promise.resolve = function (value) {
-    if (value instanceof Promise) return value;
-    if (value === null) return NULL;
-    if (value === undefined) return UNDEFINED;
-    if (value === true) return TRUE;
-    if (value === false) return FALSE;
-    if (value === 0) return ZERO;
-    if (value === '') return EMPTYSTRING;
-
-    if (typeof value === 'object' || typeof value === 'function') {
-      try {
-        var then = value.then;
-
-        if (typeof then === 'function') {
-          return new Promise(then.bind(value));
-        }
-      } catch (ex) {
-        return new Promise(function (resolve, reject) {
-          reject(ex);
-        });
-      }
-    }
-
-    return valuePromise(value);
-  };
-
-  Promise.all = function (arr) {
-    var args = Array.prototype.slice.call(arr);
-    return new Promise(function (resolve, reject) {
-      if (args.length === 0) return resolve([]);
-      var remaining = args.length;
-
-      function res(i, val) {
-        if (val && (typeof val === 'object' || typeof val === 'function')) {
-          if (val instanceof Promise && val.then === Promise.prototype.then) {
-            while (val._65 === 3) {
-              val = val._55;
-            }
-
-            if (val._65 === 1) return res(i, val._55);
-            if (val._65 === 2) reject(val._55);
-            val.then(function (val) {
-              res(i, val);
-            }, reject);
-            return;
-          } else {
-            var then = val.then;
-
-            if (typeof then === 'function') {
-              var p = new Promise(then.bind(val));
-              p.then(function (val) {
-                res(i, val);
-              }, reject);
-              return;
-            }
-          }
-        }
-
-        args[i] = val;
-
-        if (--remaining === 0) {
-          resolve(args);
-        }
-      }
-
-      for (var i = 0; i < args.length; i++) {
-        res(i, args[i]);
-      }
-    });
-  };
-
-  Promise.reject = function (value) {
-    return new Promise(function (resolve, reject) {
-      reject(value);
-    });
-  };
-
-  Promise.race = function (values) {
-    return new Promise(function (resolve, reject) {
-      values.forEach(function (value) {
-        Promise.resolve(value).then(resolve, reject);
-      });
-    });
-  };
-
-  Promise.prototype['catch'] = function (onRejected) {
-    return this.then(null, onRejected);
-  };
-},34,[35]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  function noop() {}
-
-  var LAST_ERROR = null;
-  var IS_ERROR = {};
-
-  function getThen(obj) {
-    try {
-      return obj.then;
-    } catch (ex) {
-      LAST_ERROR = ex;
-      return IS_ERROR;
-    }
-  }
-
-  function tryCallOne(fn, a) {
-    try {
-      return fn(a);
-    } catch (ex) {
-      LAST_ERROR = ex;
-      return IS_ERROR;
-    }
-  }
-
-  function tryCallTwo(fn, a, b) {
-    try {
-      fn(a, b);
-    } catch (ex) {
-      LAST_ERROR = ex;
-      return IS_ERROR;
-    }
-  }
-
-  module.exports = Promise;
-
-  function Promise(fn) {
-    if (typeof this !== 'object') {
-      throw new TypeError('Promises must be constructed via new');
-    }
-
-    if (typeof fn !== 'function') {
-      throw new TypeError('Promise constructor\'s argument is not a function');
-    }
-
-    this._40 = 0;
-    this._65 = 0;
-    this._55 = null;
-    this._72 = null;
-    if (fn === noop) return;
-    doResolve(fn, this);
-  }
-
-  Promise._37 = null;
-  Promise._87 = null;
-  Promise._61 = noop;
-
-  Promise.prototype.then = function (onFulfilled, onRejected) {
-    if (this.constructor !== Promise) {
-      return safeThen(this, onFulfilled, onRejected);
-    }
-
-    var res = new Promise(noop);
-    handle(this, new Handler(onFulfilled, onRejected, res));
-    return res;
-  };
-
-  function safeThen(self, onFulfilled, onRejected) {
-    return new self.constructor(function (resolve, reject) {
-      var res = new Promise(noop);
-      res.then(resolve, reject);
-      handle(self, new Handler(onFulfilled, onRejected, res));
-    });
-  }
-
-  function handle(self, deferred) {
-    while (self._65 === 3) {
-      self = self._55;
-    }
-
-    if (Promise._37) {
-      Promise._37(self);
-    }
-
-    if (self._65 === 0) {
-      if (self._40 === 0) {
-        self._40 = 1;
-        self._72 = deferred;
-        return;
-      }
-
-      if (self._40 === 1) {
-        self._40 = 2;
-        self._72 = [self._72, deferred];
-        return;
-      }
-
-      self._72.push(deferred);
-
-      return;
-    }
-
-    handleResolved(self, deferred);
-  }
-
-  function handleResolved(self, deferred) {
-    setImmediate(function () {
-      var cb = self._65 === 1 ? deferred.onFulfilled : deferred.onRejected;
-
-      if (cb === null) {
-        if (self._65 === 1) {
-          resolve(deferred.promise, self._55);
-        } else {
-          reject(deferred.promise, self._55);
-        }
-
-        return;
-      }
-
-      var ret = tryCallOne(cb, self._55);
-
-      if (ret === IS_ERROR) {
-        reject(deferred.promise, LAST_ERROR);
-      } else {
-        resolve(deferred.promise, ret);
-      }
-    });
-  }
-
-  function resolve(self, newValue) {
-    if (newValue === self) {
-      return reject(self, new TypeError('A promise cannot be resolved with itself.'));
-    }
-
-    if (newValue && (typeof newValue === 'object' || typeof newValue === 'function')) {
-      var then = getThen(newValue);
-
-      if (then === IS_ERROR) {
-        return reject(self, LAST_ERROR);
-      }
-
-      if (then === self.then && newValue instanceof Promise) {
-        self._65 = 3;
-        self._55 = newValue;
-        finale(self);
-        return;
-      } else if (typeof then === 'function') {
-        doResolve(then.bind(newValue), self);
-        return;
-      }
-    }
-
-    self._65 = 1;
-    self._55 = newValue;
-    finale(self);
-  }
-
-  function reject(self, newValue) {
-    self._65 = 2;
-    self._55 = newValue;
-
-    if (Promise._87) {
-      Promise._87(self, newValue);
-    }
-
-    finale(self);
-  }
-
-  function finale(self) {
-    if (self._40 === 1) {
-      handle(self, self._72);
-      self._72 = null;
-    }
-
-    if (self._40 === 2) {
-      for (var i = 0; i < self._72.length; i++) {
-        handle(self, self._72[i]);
-      }
-
-      self._72 = null;
-    }
-  }
-
-  function Handler(onFulfilled, onRejected, promise) {
-    this.onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : null;
-    this.onRejected = typeof onRejected === 'function' ? onRejected : null;
-    this.promise = promise;
-  }
-
-  function doResolve(fn, promise) {
-    var done = false;
-    var res = tryCallTwo(fn, function (value) {
-      if (done) return;
-      done = true;
-      resolve(promise, value);
-    }, function (reason) {
-      if (done) return;
-      done = true;
-      reject(promise, reason);
-    });
-
-    if (!done && res === IS_ERROR) {
-      done = true;
-      reject(promise, LAST_ERROR);
-    }
-  }
-},35,[]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  var Promise = _require(_dependencyMap[0]);
-
-  module.exports = Promise;
-
-  Promise.prototype.done = function (onFulfilled, onRejected) {
-    var self = arguments.length ? this.then.apply(this, arguments) : this;
-    self.then(null, function (err) {
-      setTimeout(function () {
-        throw err;
-      }, 0);
-    });
-  };
-},36,[35]);
-__d(function (global, _require, module, exports, _dependencyMap) {
   !function (global) {
     "use strict";
 
@@ -10606,7 +10637,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     return XMLHttpRequest;
   }(EventTarget.apply(undefined, babelHelpers.toConsumableArray(XHR_EVENTS))), _class2.UNSENT = UNSENT, _class2.OPENED = OPENED, _class2.HEADERS_RECEIVED = HEADERS_RECEIVED, _class2.LOADING = LOADING, _class2.DONE = DONE, _class2._interceptor = null, _temp);
   module.exports = XMLHttpRequest;
-},63,[64,959,73,15,29,75]);
+},63,[64,68,73,15,29,75]);
 __d(function (global, _require, module, exports, _dependencyMap) {
     "use strict";
 
@@ -10975,22 +11006,6 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
   var convertRequestBody = _require(_dependencyMap[3]);
 
-  function convertHeadersMapToArray(headers) {
-    var headerArray = [];
-
-    for (var name in headers) {
-      headerArray.push([name, headers[name]]);
-    }
-
-    return headerArray;
-  }
-
-  var _requestId = 1;
-
-  function generateRequestId() {
-    return _requestId++;
-  }
-
   var RCTNetworking = function (_NativeEventEmitter) {
     babelHelpers.inherits(RCTNetworking, _NativeEventEmitter);
 
@@ -11007,20 +11022,18 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       key: "sendRequest",
       value: function sendRequest(method, trackingName, url, headers, data, responseType, incrementalUpdates, timeout, callback, withCredentials) {
         var body = convertRequestBody(data);
-
-        if (body && body.formData) {
-          body.formData = body.formData.map(function (part) {
-            return babelHelpers.extends({}, part, {
-              headers: convertHeadersMapToArray(part.headers)
-            });
-          });
-        }
-
-        var requestId = generateRequestId();
-        RCTNetworkingNative.sendRequest(method, url, requestId, convertHeadersMapToArray(headers), babelHelpers.extends({}, body, {
-          trackingName: trackingName
-        }), responseType, incrementalUpdates, timeout, withCredentials);
-        callback(requestId);
+        RCTNetworkingNative.sendRequest({
+          method: method,
+          url: url,
+          data: babelHelpers.extends({}, body, {
+            trackingName: trackingName
+          }),
+          headers: headers,
+          responseType: responseType,
+          incrementalUpdates: incrementalUpdates,
+          timeout: timeout,
+          withCredentials: withCredentials
+        }, callback);
       }
     }, {
       key: "abortRequest",
@@ -11040,7 +11053,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     RCTNetworking = new RCTNetworking();
   }
   module.exports = RCTNetworking;
-},959,[69,70,17,71]);
+},68,[69,70,17,71]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -11109,6 +11122,10 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
       var _this = babelHelpers.possibleConstructorReturn(this, (NativeEventEmitter.__proto__ || Object.getPrototypeOf(NativeEventEmitter)).call(this, RCTDeviceEventEmitter.sharedSubscriber));
 
+      {
+        invariant(nativeModule, 'Native module cannot be null.');
+        _this._nativeModule = nativeModule;
+      }
       return _this;
     }
 
@@ -11147,7 +11164,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   }(EventEmitter);
 
   module.exports = NativeEventEmitter;
-},70,[38,958,37,15]);
+},70,[38,25,37,15]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -12241,9 +12258,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       key: "_close",
       value: function _close(code, reason) {
         {
-          var statusCode = typeof code === 'number' ? code : CLOSE_NORMAL;
-          var closeReason = typeof reason === 'string' ? reason : '';
-          WebSocketModule.close(statusCode, closeReason, this._socketId);
+          WebSocketModule.close(this._socketId);
         }
 
         if (BlobManager.isAvailable && this._binaryType === 'blob') {
@@ -12353,7 +12368,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     return WebSocket;
   }(EventTarget.apply(undefined, WEBSOCKET_EVENTS)), _class.CONNECTING = CONNECTING, _class.OPEN = OPEN, _class.CLOSING = CLOSING, _class.CLOSED = CLOSED, _class.isAvailable = !!WebSocketModule, _temp);
   module.exports = WebSocket;
-},80,[74,64,70,958,75,17,81,73,72,15]);
+},80,[74,64,70,25,75,17,81,73,72,15]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -12628,7 +12643,13 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       key: "alert",
       value: function alert(title, message, buttons, options, type) {
         {
-          AlertAndroid.alert(title, message, buttons, options);
+          if (typeof type !== 'undefined') {
+            console.warn('Alert.alert() with a 5th "type" parameter is deprecated and will be removed. Use AlertIOS.prompt() instead.');
+            AlertIOS.alert(title, message, buttons, type);
+            return;
+          }
+
+          AlertIOS.alert(title, message, buttons);
         }
       }
     }]);
@@ -12700,7 +12721,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   }();
 
   module.exports = Alert;
-},85,[86,17,958]);
+},85,[86,17,25]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -12818,7 +12839,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       RCTLocationObserver.requestAuthorization();
     },
     getCurrentPosition: function getCurrentPosition(geo_success, geo_error, geo_options) {
-      var hasPermission, status;
+      var hasPermission;
       return regeneratorRuntime.async(function getCurrentPosition$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
@@ -12826,35 +12847,11 @@ __d(function (global, _require, module, exports, _dependencyMap) {
               invariant(typeof geo_success === 'function', 'Must provide a valid geo_success callback.');
               hasPermission = true;
 
-              if (!(Platform.Version >= 23)) {
-                _context.next = 11;
-                break;
-              }
-
-              _context.next = 5;
-              return regeneratorRuntime.awrap(PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION));
-
-            case 5:
-              hasPermission = _context.sent;
-
-              if (hasPermission) {
-                _context.next = 11;
-                break;
-              }
-
-              _context.next = 9;
-              return regeneratorRuntime.awrap(PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION));
-
-            case 9:
-              status = _context.sent;
-              hasPermission = status === PermissionsAndroid.RESULTS.GRANTED;
-
-            case 11:
               if (hasPermission) {
                 RCTLocationObserver.getCurrentPosition(geo_options || {}, geo_success, geo_error || logError);
               }
 
-            case 12:
+            case 3:
             case "end":
               return _context.stop();
           }
@@ -12915,7 +12912,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     }
   };
   module.exports = Geolocation;
-},87,[70,17,15,88,29,958,89]);
+},87,[70,17,15,88,29,25,89]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -13323,18 +13320,45 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     invariant(false, "UIManager.takeSnapshot should not be called directly. Use ReactNative.takeSnapshot instead.");
   };
 
-  if (UIManager.ViewManagerNames) {
-    UIManager.ViewManagerNames.forEach(function (viewManagerName) {
-      defineLazyObjectProperty(UIManager, viewManagerName, {
-        get: function get() {
-          return UIManager.getConstantsForViewManager(viewManagerName);
-        }
-      });
+  {
+    Object.keys(UIManager).forEach(function (viewName) {
+      var viewConfig = UIManager[viewName];
+
+      if (viewConfig.Manager) {
+        defineLazyObjectProperty(viewConfig, 'Constants', {
+          get: function get() {
+            var viewManager = NativeModules[viewConfig.Manager];
+            var constants = {};
+            viewManager && Object.keys(viewManager).forEach(function (key) {
+              var value = viewManager[key];
+
+              if (typeof value !== 'function') {
+                constants[key] = value;
+              }
+            });
+            return constants;
+          }
+        });
+        defineLazyObjectProperty(viewConfig, 'Commands', {
+          get: function get() {
+            var viewManager = NativeModules[viewConfig.Manager];
+            var commands = {};
+            var index = 0;
+            viewManager && Object.keys(viewManager).forEach(function (key) {
+              var value = viewManager[key];
+
+              if (typeof value === 'function') {
+                commands[key] = index++;
+              }
+            });
+            return commands;
+          }
+        });
+      }
     });
   }
-
   module.exports = UIManager;
-},97,[17,958,31,15]);
+},97,[17,25,31,15]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -13363,7 +13387,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       if (this._currentlyFocusedID !== textFieldID && textFieldID !== null) {
         this._currentlyFocusedID = textFieldID;
         {
-          UIManager.dispatchViewManagerCommand(textFieldID, UIManager.AndroidTextInput.Commands.focusTextInput, null);
+          UIManager.focus(textFieldID);
         }
       }
     },
@@ -13371,13 +13395,13 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       if (this._currentlyFocusedID === textFieldID && textFieldID !== null) {
         this._currentlyFocusedID = null;
         {
-          UIManager.dispatchViewManagerCommand(textFieldID, UIManager.AndroidTextInput.Commands.blurTextInput, null);
+          UIManager.blur(textFieldID);
         }
       }
     }
   };
   module.exports = TextInputState;
-},99,[958,97]);
+},99,[25,97]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -13979,785 +14003,257 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
-  var _class, _temp;
+  module.exports = _require(_dependencyMap[0]);
+},109,[110]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
 
-  var ColorPropType = _require(_dependencyMap[0]);
+  var React = _require(_dependencyMap[0]);
 
-  var PropTypes = _require(_dependencyMap[1]);
+  var StyleSheet = _require(_dependencyMap[1]);
 
-  var React = _require(_dependencyMap[2]);
+  var UnimplementedView = function (_React$Component) {
+    babelHelpers.inherits(UnimplementedView, _React$Component);
 
-  var ReactNative = _require(_dependencyMap[3]);
-
-  var ViewPropTypes = _require(_dependencyMap[4]);
-
-  var requireNativeComponent = _require(_dependencyMap[5]);
-
-  var STYLE_ATTRIBUTES = ['Horizontal', 'Normal', 'Small', 'Large', 'Inverse', 'SmallInverse', 'LargeInverse'];
-
-  var indeterminateType = function indeterminateType(props, propName, componentName) {
-    var checker = function checker() {
-      var indeterminate = props[propName];
-      var styleAttr = props.styleAttr;
-
-      if (!indeterminate && styleAttr !== 'Horizontal') {
-        return new Error('indeterminate=false is only valid for styleAttr=Horizontal');
-      }
-    };
-
-    for (var _len = arguments.length, rest = Array(_len > 3 ? _len - 3 : 0), _key = 3; _key < _len; _key++) {
-      rest[_key - 3] = arguments[_key];
+    function UnimplementedView() {
+      babelHelpers.classCallCheck(this, UnimplementedView);
+      return babelHelpers.possibleConstructorReturn(this, (UnimplementedView.__proto__ || Object.getPrototypeOf(UnimplementedView)).apply(this, arguments));
     }
 
-    return PropTypes.bool.apply(PropTypes, [props, propName, componentName].concat(rest)) || checker();
-  };
-
-  var ProgressBarAndroid = (_temp = _class = function (_ReactNative$NativeCo) {
-    babelHelpers.inherits(ProgressBarAndroid, _ReactNative$NativeCo);
-
-    function ProgressBarAndroid() {
-      babelHelpers.classCallCheck(this, ProgressBarAndroid);
-      return babelHelpers.possibleConstructorReturn(this, (ProgressBarAndroid.__proto__ || Object.getPrototypeOf(ProgressBarAndroid)).apply(this, arguments));
-    }
-
-    babelHelpers.createClass(ProgressBarAndroid, [{
+    babelHelpers.createClass(UnimplementedView, [{
+      key: "setNativeProps",
+      value: function setNativeProps() {}
+    }, {
       key: "render",
       value: function render() {
-        return React.createElement(AndroidProgressBar, this.props);
+        var View = _require(_dependencyMap[2]);
+
+        return React.createElement(
+          View,
+          {
+            style: [styles.unimplementedView, this.props.style]
+          },
+          this.props.children
+        );
       }
     }]);
-    return ProgressBarAndroid;
-  }(ReactNative.NativeComponent), _class.propTypes = babelHelpers.extends({}, ViewPropTypes, {
-    styleAttr: PropTypes.oneOf(STYLE_ATTRIBUTES),
-    animating: PropTypes.bool,
-    indeterminate: indeterminateType,
-    progress: PropTypes.number,
-    color: ColorPropType,
-    testID: PropTypes.string
-  }), _class.defaultProps = {
-    styleAttr: 'Normal',
-    indeterminate: true,
-    animating: true
-  }, _temp);
-  var AndroidProgressBar = requireNativeComponent('AndroidProgressBar', ProgressBarAndroid, {
-    nativeOnly: {
-      animating: true
-    }
+    return UnimplementedView;
+  }(React.Component);
+
+  var styles = StyleSheet.create({
+    unimplementedView: {}
   });
-  module.exports = ProgressBarAndroid;
-},960,[43,120,103,46,135,146]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  {
-    module.exports = _require(_dependencyMap[0])();
-  }
-},120,[121]);
+  module.exports = UnimplementedView;
+},110,[103,111,133]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
-  var ReactPropTypesSecret = _require(_dependencyMap[0]);
+  var PixelRatio = _require(_dependencyMap[0]);
 
-  function emptyFunction() {}
-
-  module.exports = function () {
-    function shim(props, propName, componentName, location, propFullName, secret) {
-      if (secret === ReactPropTypesSecret) {
-        return;
-      }
-
-      var err = new Error("Calling PropTypes validators directly is not supported by the `prop-types` package. Use PropTypes.checkPropTypes() to call them. Read more at http://fb.me/use-check-prop-types");
-      err.name = 'Invariant Violation';
-      throw err;
-    }
-
-    ;
-    shim.isRequired = shim;
-
-    function getShim() {
-      return shim;
-    }
-
-    ;
-    var ReactPropTypes = {
-      array: shim,
-      bool: shim,
-      func: shim,
-      number: shim,
-      object: shim,
-      string: shim,
-      symbol: shim,
-      any: shim,
-      arrayOf: getShim,
-      element: shim,
-      instanceOf: getShim,
-      node: shim,
-      objectOf: getShim,
-      oneOf: getShim,
-      oneOfType: getShim,
-      shape: getShim,
-      exact: getShim
-    };
-    ReactPropTypes.checkPropTypes = emptyFunction;
-    ReactPropTypes.PropTypes = ReactPropTypes;
-    return ReactPropTypes;
-  };
-},121,[122]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  var ReactPropTypesSecret = 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED';
-  module.exports = ReactPropTypesSecret;
-},122,[]);
-__d(function (global, _require2, module, exports, _dependencyMap) {
-  'use strict';
-
-  var React = _require2(_dependencyMap[0]);
-
-  var EdgeInsetsPropType = _require2(_dependencyMap[1]);
-
-  var PlatformViewPropTypes = _require2(_dependencyMap[2]);
-
-  var PropTypes = _require2(_dependencyMap[3]);
-
-  var StyleSheetPropType = _require2(_dependencyMap[4]);
-
-  var ViewStylePropTypes = _require2(_dependencyMap[5]);
-
-  var _require = _require2(_dependencyMap[6]),
-      AccessibilityComponentTypes = _require.AccessibilityComponentTypes,
-      AccessibilityTraits = _require.AccessibilityTraits;
-
-  var stylePropType = StyleSheetPropType(ViewStylePropTypes);
-  module.exports = babelHelpers.extends({}, PlatformViewPropTypes, {
-    accessible: PropTypes.bool,
-    accessibilityLabel: PropTypes.node,
-    accessibilityActions: PropTypes.arrayOf(PropTypes.string),
-    accessibilityComponentType: PropTypes.oneOf(AccessibilityComponentTypes),
-    accessibilityLiveRegion: PropTypes.oneOf(['none', 'polite', 'assertive']),
-    importantForAccessibility: PropTypes.oneOf(['auto', 'yes', 'no', 'no-hide-descendants']),
-    accessibilityTraits: PropTypes.oneOfType([PropTypes.oneOf(AccessibilityTraits), PropTypes.arrayOf(PropTypes.oneOf(AccessibilityTraits))]),
-    accessibilityViewIsModal: PropTypes.bool,
-    accessibilityElementsHidden: PropTypes.bool,
-    onAccessibilityAction: PropTypes.func,
-    onAccessibilityTap: PropTypes.func,
-    onMagicTap: PropTypes.func,
-    testID: PropTypes.string,
-    nativeID: PropTypes.string,
-    onResponderGrant: PropTypes.func,
-    onResponderMove: PropTypes.func,
-    onResponderReject: PropTypes.func,
-    onResponderRelease: PropTypes.func,
-    onResponderTerminate: PropTypes.func,
-    onResponderTerminationRequest: PropTypes.func,
-    onStartShouldSetResponder: PropTypes.func,
-    onStartShouldSetResponderCapture: PropTypes.func,
-    onMoveShouldSetResponder: PropTypes.func,
-    onMoveShouldSetResponderCapture: PropTypes.func,
-    hitSlop: EdgeInsetsPropType,
-    onLayout: PropTypes.func,
-    pointerEvents: PropTypes.oneOf(['box-none', 'none', 'box-only', 'auto']),
-    style: stylePropType,
-    removeClippedSubviews: PropTypes.bool,
-    renderToHardwareTextureAndroid: PropTypes.bool,
-    shouldRasterizeIOS: PropTypes.bool,
-    collapsable: PropTypes.bool,
-    needsOffscreenAlphaCompositing: PropTypes.bool
-  });
-},135,[103,136,141,120,143,127,144]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  var PropTypes = _require(_dependencyMap[0]);
-
-  var createStrictShapeTypeChecker = _require(_dependencyMap[1]);
-
-  var EdgeInsetsPropType = createStrictShapeTypeChecker({
-    top: PropTypes.number,
-    left: PropTypes.number,
-    bottom: PropTypes.number,
-    right: PropTypes.number
-  });
-  module.exports = EdgeInsetsPropType;
-},136,[120,137]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  var invariant = _require(_dependencyMap[0]);
-
-  var merge = _require(_dependencyMap[1]);
-
-  function createStrictShapeTypeChecker(shapeTypes) {
-    function checkType(isRequired, props, propName, componentName, location) {
-      if (!props[propName]) {
-        if (isRequired) {
-          invariant(false, "Required object `" + propName + "` was not specified in " + ("`" + componentName + "`."));
-        }
-
-        return;
-      }
-
-      var propValue = props[propName];
-      var propType = typeof propValue;
-      var locationName = location || '(unknown)';
-
-      if (propType !== 'object') {
-        invariant(false, "Invalid " + locationName + " `" + propName + "` of type `" + propType + "` " + ("supplied to `" + componentName + "`, expected `object`."));
-      }
-
-      var allKeys = merge(props[propName], shapeTypes);
-
-      for (var _len = arguments.length, rest = Array(_len > 5 ? _len - 5 : 0), _key = 5; _key < _len; _key++) {
-        rest[_key - 5] = arguments[_key];
-      }
-
-      for (var key in allKeys) {
-        var checker = shapeTypes[key];
-
-        if (!checker) {
-          invariant(false, "Invalid props." + propName + " key `" + key + "` supplied to `" + componentName + "`." + '\nBad object: ' + JSON.stringify(props[propName], null, '  ') + '\nValid keys: ' + JSON.stringify(Object.keys(shapeTypes), null, '  '));
-        }
-
-        var error = checker.apply(undefined, [propValue, key, componentName, location].concat(rest));
-
-        if (error) {
-          invariant(false, error.message + '\nBad object: ' + JSON.stringify(props[propName], null, '  '));
-        }
-      }
-    }
-
-    function chainedCheckType(props, propName, componentName, location) {
-      for (var _len2 = arguments.length, rest = Array(_len2 > 4 ? _len2 - 4 : 0), _key2 = 4; _key2 < _len2; _key2++) {
-        rest[_key2 - 4] = arguments[_key2];
-      }
-
-      return checkType.apply(undefined, [false, props, propName, componentName, location].concat(rest));
-    }
-
-    chainedCheckType.isRequired = checkType.bind(null, true);
-    return chainedCheckType;
-  }
-
-  module.exports = createStrictShapeTypeChecker;
-},137,[15,138]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  "use strict";
-
-  var mergeInto = _require(_dependencyMap[0]);
-
-  var merge = function merge(one, two) {
-    var result = {};
-    mergeInto(result, one);
-    mergeInto(result, two);
-    return result;
-  };
-
-  module.exports = merge;
-},138,[139]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  "use strict";
-
-  var mergeHelpers = _require(_dependencyMap[0]);
-
-  var checkMergeObjectArg = mergeHelpers.checkMergeObjectArg;
-  var checkMergeIntoObjectArg = mergeHelpers.checkMergeIntoObjectArg;
-
-  function mergeInto(one, two) {
-    checkMergeIntoObjectArg(one);
-
-    if (two != null) {
-      checkMergeObjectArg(two);
-
-      for (var key in two) {
-        if (!two.hasOwnProperty(key)) {
-          continue;
-        }
-
-        one[key] = two[key];
-      }
-    }
-  }
-
-  module.exports = mergeInto;
-},139,[140]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  var invariant = _require(_dependencyMap[0]);
-
-  var MAX_MERGE_DEPTH = 36;
-
-  var isTerminal = function isTerminal(o) {
-    return typeof o !== 'object' || o instanceof Date || o === null;
-  };
-
-  var mergeHelpers = {
-    MAX_MERGE_DEPTH: MAX_MERGE_DEPTH,
-    isTerminal: isTerminal,
-    normalizeMergeArg: function normalizeMergeArg(arg) {
-      return arg === undefined || arg === null ? {} : arg;
-    },
-    checkMergeArrayArgs: function checkMergeArrayArgs(one, two) {
-      invariant(Array.isArray(one) && Array.isArray(two), 'Tried to merge arrays, instead got %s and %s.', one, two);
-    },
-    checkMergeObjectArgs: function checkMergeObjectArgs(one, two) {
-      mergeHelpers.checkMergeObjectArg(one);
-      mergeHelpers.checkMergeObjectArg(two);
-    },
-    checkMergeObjectArg: function checkMergeObjectArg(arg) {
-      invariant(!isTerminal(arg) && !Array.isArray(arg), 'Tried to merge an object, instead got %s.', arg);
-    },
-    checkMergeIntoObjectArg: function checkMergeIntoObjectArg(arg) {
-      invariant((!isTerminal(arg) || typeof arg === 'function') && !Array.isArray(arg), 'Tried to merge into an object, instead got %s.', arg);
-    },
-    checkMergeLevel: function checkMergeLevel(level) {
-      invariant(level < MAX_MERGE_DEPTH, "Maximum deep merge depth exceeded. You may be attempting to merge circular structures in an unsupported way.");
-    },
-    checkArrayStrategy: function checkArrayStrategy(strategy) {
-      invariant(strategy === undefined || strategy in mergeHelpers.ArrayStrategies, "You must provide an array strategy to deep merge functions to instruct the deep merge how to resolve merging two arrays.");
-    },
-    ArrayStrategies: {
-      Clobber: 'Clobber',
-      Concat: 'Concat',
-      IndexByIndex: 'IndexByIndex'
-    }
-  };
-  module.exports = mergeHelpers;
-},140,[15]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  var Platform = _require(_dependencyMap[0]);
-
-  var TVViewPropTypes = {};
-
-  if (Platform.isTV || true) {
-    TVViewPropTypes = _require(_dependencyMap[1]);
-  }
-
-  module.exports = TVViewPropTypes;
-},141,[958,142]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  var PropTypes = _require(_dependencyMap[0]);
-
-  var TVViewPropTypes = {
-    isTVSelectable: PropTypes.bool,
-    hasTVPreferredFocus: PropTypes.bool,
-    tvParallaxProperties: PropTypes.object,
-    tvParallaxShiftDistanceX: PropTypes.number,
-    tvParallaxShiftDistanceY: PropTypes.number,
-    tvParallaxTiltAngle: PropTypes.number,
-    tvParallaxMagnification: PropTypes.number
-  };
-  module.exports = TVViewPropTypes;
-},142,[120]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  var createStrictShapeTypeChecker = _require(_dependencyMap[0]);
-
-  var flattenStyle = _require(_dependencyMap[1]);
-
-  function StyleSheetPropType(shape) {
-    var shapePropType = createStrictShapeTypeChecker(shape);
-    return function (props, propName, componentName, location) {
-      var newProps = props;
-
-      if (props[propName]) {
-        newProps = {};
-        newProps[propName] = flattenStyle(props[propName]);
-      }
-
-      for (var _len = arguments.length, rest = Array(_len > 4 ? _len - 4 : 0), _key = 4; _key < _len; _key++) {
-        rest[_key - 4] = arguments[_key];
-      }
-
-      return shapePropType.apply(undefined, [newProps, propName, componentName, location].concat(rest));
-    };
-  }
-
-  module.exports = StyleSheetPropType;
-},143,[137,101]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  var ColorPropType = _require(_dependencyMap[0]);
-
-  var LayoutPropTypes = _require(_dependencyMap[1]);
-
-  var ReactPropTypes = _require(_dependencyMap[2]);
-
-  var ShadowPropTypesIOS = _require(_dependencyMap[3]);
-
-  var TransformPropTypes = _require(_dependencyMap[4]);
-
-  var ViewStylePropTypes = babelHelpers.extends({}, LayoutPropTypes, ShadowPropTypesIOS, TransformPropTypes, {
-    backfaceVisibility: ReactPropTypes.oneOf(['visible', 'hidden']),
-    backgroundColor: ColorPropType,
-    borderColor: ColorPropType,
-    borderTopColor: ColorPropType,
-    borderRightColor: ColorPropType,
-    borderBottomColor: ColorPropType,
-    borderLeftColor: ColorPropType,
-    borderStartColor: ColorPropType,
-    borderEndColor: ColorPropType,
-    borderRadius: ReactPropTypes.number,
-    borderTopLeftRadius: ReactPropTypes.number,
-    borderTopRightRadius: ReactPropTypes.number,
-    borderTopStartRadius: ReactPropTypes.number,
-    borderTopEndRadius: ReactPropTypes.number,
-    borderBottomLeftRadius: ReactPropTypes.number,
-    borderBottomRightRadius: ReactPropTypes.number,
-    borderBottomStartRadius: ReactPropTypes.number,
-    borderBottomEndRadius: ReactPropTypes.number,
-    borderStyle: ReactPropTypes.oneOf(['solid', 'dotted', 'dashed']),
-    borderWidth: ReactPropTypes.number,
-    borderTopWidth: ReactPropTypes.number,
-    borderRightWidth: ReactPropTypes.number,
-    borderBottomWidth: ReactPropTypes.number,
-    borderLeftWidth: ReactPropTypes.number,
-    opacity: ReactPropTypes.number,
-    elevation: ReactPropTypes.number
-  });
-  module.exports = ViewStylePropTypes;
-},127,[43,119,120,123,124]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  var ReactPropTypes = _require(_dependencyMap[0]);
-
-  var LayoutPropTypes = {
-    display: ReactPropTypes.oneOf(['none', 'flex']),
-    width: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    height: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    start: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    end: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    top: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    left: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    right: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    bottom: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    minWidth: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    maxWidth: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    minHeight: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    maxHeight: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    margin: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    marginVertical: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    marginHorizontal: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    marginTop: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    marginBottom: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    marginLeft: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    marginRight: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    marginStart: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    marginEnd: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    padding: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    paddingVertical: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    paddingHorizontal: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    paddingTop: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    paddingBottom: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    paddingLeft: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    paddingRight: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    paddingStart: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    paddingEnd: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    borderWidth: ReactPropTypes.number,
-    borderTopWidth: ReactPropTypes.number,
-    borderStartWidth: ReactPropTypes.number,
-    borderEndWidth: ReactPropTypes.number,
-    borderRightWidth: ReactPropTypes.number,
-    borderBottomWidth: ReactPropTypes.number,
-    borderLeftWidth: ReactPropTypes.number,
-    position: ReactPropTypes.oneOf(['absolute', 'relative']),
-    flexDirection: ReactPropTypes.oneOf(['row', 'row-reverse', 'column', 'column-reverse']),
-    flexWrap: ReactPropTypes.oneOf(['wrap', 'nowrap']),
-    justifyContent: ReactPropTypes.oneOf(['flex-start', 'flex-end', 'center', 'space-between', 'space-around', 'space-evenly']),
-    alignItems: ReactPropTypes.oneOf(['flex-start', 'flex-end', 'center', 'stretch', 'baseline']),
-    alignSelf: ReactPropTypes.oneOf(['auto', 'flex-start', 'flex-end', 'center', 'stretch', 'baseline']),
-    alignContent: ReactPropTypes.oneOf(['flex-start', 'flex-end', 'center', 'stretch', 'space-between', 'space-around']),
-    overflow: ReactPropTypes.oneOf(['visible', 'hidden', 'scroll']),
-    flex: ReactPropTypes.number,
-    flexGrow: ReactPropTypes.number,
-    flexShrink: ReactPropTypes.number,
-    flexBasis: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
-    aspectRatio: ReactPropTypes.number,
-    zIndex: ReactPropTypes.number,
-    direction: ReactPropTypes.oneOf(['inherit', 'ltr', 'rtl'])
-  };
-  module.exports = LayoutPropTypes;
-},119,[120]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  var ColorPropType = _require(_dependencyMap[0]);
-
-  var ReactPropTypes = _require(_dependencyMap[1]);
-
-  var ShadowPropTypesIOS = {
-    shadowColor: ColorPropType,
-    shadowOffset: ReactPropTypes.shape({
-      width: ReactPropTypes.number,
-      height: ReactPropTypes.number
-    }),
-    shadowOpacity: ReactPropTypes.number,
-    shadowRadius: ReactPropTypes.number
-  };
-  module.exports = ShadowPropTypesIOS;
-},123,[43,120]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  var ReactPropTypes = _require(_dependencyMap[0]);
-
-  var deprecatedPropType = _require(_dependencyMap[1]);
-
-  var TransformMatrixPropType = function TransformMatrixPropType(props, propName, componentName) {
-    if (props[propName]) {
-      return new Error("The transformMatrix style property is deprecated. Use `transform: [{ matrix: ... }]` instead.");
-    }
-  };
-
-  var DecomposedMatrixPropType = function DecomposedMatrixPropType(props, propName, componentName) {
-    if (props[propName]) {
-      return new Error("The decomposedMatrix style property is deprecated. Use `transform: [...]` instead.");
-    }
-  };
-
-  var TransformPropTypes = {
-    transform: ReactPropTypes.arrayOf(ReactPropTypes.oneOfType([ReactPropTypes.shape({
-      perspective: ReactPropTypes.number
-    }), ReactPropTypes.shape({
-      rotate: ReactPropTypes.string
-    }), ReactPropTypes.shape({
-      rotateX: ReactPropTypes.string
-    }), ReactPropTypes.shape({
-      rotateY: ReactPropTypes.string
-    }), ReactPropTypes.shape({
-      rotateZ: ReactPropTypes.string
-    }), ReactPropTypes.shape({
-      scale: ReactPropTypes.number
-    }), ReactPropTypes.shape({
-      scaleX: ReactPropTypes.number
-    }), ReactPropTypes.shape({
-      scaleY: ReactPropTypes.number
-    }), ReactPropTypes.shape({
-      translateX: ReactPropTypes.number
-    }), ReactPropTypes.shape({
-      translateY: ReactPropTypes.number
-    }), ReactPropTypes.shape({
-      skewX: ReactPropTypes.string
-    }), ReactPropTypes.shape({
-      skewY: ReactPropTypes.string
-    })])),
-    transformMatrix: TransformMatrixPropType,
-    decomposedMatrix: DecomposedMatrixPropType,
-    scaleX: deprecatedPropType(ReactPropTypes.number, 'Use the transform prop instead.'),
-    scaleY: deprecatedPropType(ReactPropTypes.number, 'Use the transform prop instead.'),
-    rotation: deprecatedPropType(ReactPropTypes.number, 'Use the transform prop instead.'),
-    translateX: deprecatedPropType(ReactPropTypes.number, 'Use the transform prop instead.'),
-    translateY: deprecatedPropType(ReactPropTypes.number, 'Use the transform prop instead.')
-  };
-  module.exports = TransformPropTypes;
-},124,[120,125]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  var UIManager = _require(_dependencyMap[0]);
-
-  function deprecatedPropType(propType, explanation) {
-    return function validate(props, propName, componentName) {
-      if (!UIManager[componentName] && props[propName] !== undefined) {
-        console.warn("`" + propName + "` supplied to `" + componentName + "` has been deprecated. " + explanation);
-      }
-
-      for (var _len = arguments.length, rest = Array(_len > 3 ? _len - 3 : 0), _key = 3; _key < _len; _key++) {
-        rest[_key - 3] = arguments[_key];
-      }
-
-      return propType.apply(undefined, [props, propName, componentName].concat(rest));
-    };
-  }
-
-  module.exports = deprecatedPropType;
-},125,[97]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  module.exports = {
-    AccessibilityTraits: ['none', 'button', 'link', 'header', 'search', 'image', 'selected', 'plays', 'key', 'text', 'summary', 'disabled', 'frequentUpdates', 'startsMedia', 'adjustable', 'allowsDirectInteraction', 'pageTurn'],
-    AccessibilityComponentTypes: ['none', 'button', 'radiobutton_checked', 'radiobutton_unchecked']
-  };
-},144,[]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  var Platform = _require(_dependencyMap[0]);
-
-  var ReactNativeBridgeEventPlugin = _require(_dependencyMap[1]);
+  var ReactNativePropRegistry = _require(_dependencyMap[1]);
 
   var ReactNativeStyleAttributes = _require(_dependencyMap[2]);
 
-  var UIManager = _require(_dependencyMap[3]);
+  var StyleSheetValidation = _require(_dependencyMap[3]);
 
-  var createReactNativeComponentClass = _require(_dependencyMap[4]);
+  var flatten = _require(_dependencyMap[4]);
 
-  var insetsDiffer = _require(_dependencyMap[5]);
+  var hairlineWidth = PixelRatio.roundToNearestPixel(0.4);
 
-  var matricesDiffer = _require(_dependencyMap[6]);
+  if (hairlineWidth === 0) {
+    hairlineWidth = 1 / PixelRatio.get();
+  }
 
-  var pointsDiffer = _require(_dependencyMap[7]);
-
-  var processColor = _require(_dependencyMap[8]);
-
-  var resolveAssetSource = _require(_dependencyMap[9]);
-
-  var sizesDiffer = _require(_dependencyMap[10]);
-
-  var verifyPropTypes = _require(_dependencyMap[11]);
-
-  var invariant = _require(_dependencyMap[12]);
-
-  var warning = _require(_dependencyMap[13]);
-
-  var hasAttachedDefaultEventTypes = false;
-
-  function requireNativeComponent(viewName, componentInterface, extraConfig) {
-    function attachDefaultEventTypes(viewConfig) {
-      {
-        if (UIManager.ViewManagerNames) {
-          viewConfig = merge(viewConfig, UIManager.getDefaultEventTypes());
-        } else {
-          viewConfig.bubblingEventTypes = merge(viewConfig.bubblingEventTypes, UIManager.genericBubblingEventTypes);
-          viewConfig.directEventTypes = merge(viewConfig.directEventTypes, UIManager.genericDirectEventTypes);
-        }
-      }
-    }
-
-    function merge(destination, source) {
-      if (!source) {
-        return destination;
-      }
-
-      if (!destination) {
-        return source;
-      }
-
-      for (var key in source) {
-        if (!source.hasOwnProperty(key)) {
-          continue;
-        }
-
-        var sourceValue = source[key];
-
-        if (destination.hasOwnProperty(key)) {
-          var destinationValue = destination[key];
-
-          if (typeof sourceValue === 'object' && typeof destinationValue === 'object') {
-            sourceValue = merge(destinationValue, sourceValue);
-          }
-        }
-
-        destination[key] = sourceValue;
-      }
-
-      return destination;
-    }
-
-    function getViewConfig() {
-      var viewConfig = UIManager[viewName];
-      invariant(viewConfig != null && !viewConfig.NativeProps != null, 'Native component for "%s" does not exist', viewName);
-      viewConfig.uiViewClassName = viewName;
-      viewConfig.validAttributes = {};
-
-      if (componentInterface) {
-        viewConfig.propTypes = typeof componentInterface.__propTypesSecretDontUseThesePlease === 'object' ? componentInterface.__propTypesSecretDontUseThesePlease : componentInterface.propTypes;
+  var absoluteFillObject = {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0
+  };
+  var absoluteFill = ReactNativePropRegistry.register(absoluteFillObject);
+  module.exports = {
+    hairlineWidth: hairlineWidth,
+    absoluteFill: absoluteFill,
+    absoluteFillObject: absoluteFillObject,
+    compose: function compose(style1, style2) {
+      if (style1 != null && style2 != null) {
+        return [style1, style2];
       } else {
-        viewConfig.propTypes = null;
+        return style1 != null ? style1 : style2;
+      }
+    },
+    flatten: flatten,
+    setStyleAttributePreprocessor: function setStyleAttributePreprocessor(property, process) {
+      var value = void 0;
+
+      if (typeof ReactNativeStyleAttributes[property] === 'string') {
+        value = {};
+      } else if (typeof ReactNativeStyleAttributes[property] === 'object') {
+        value = ReactNativeStyleAttributes[property];
+      } else {
+        console.error(property + " is not a valid style attribute");
+        return;
       }
 
-      var baseModuleName = viewConfig.baseModuleName;
-      var bubblingEventTypes = viewConfig.bubblingEventTypes;
-      var directEventTypes = viewConfig.directEventTypes;
-      var nativeProps = viewConfig.NativeProps;
+      ReactNativeStyleAttributes[property] = babelHelpers.extends({}, value, {
+        process: process
+      });
+    },
+    create: function create(obj) {
+      var result = {};
 
-      while (baseModuleName) {
-        var baseModule = UIManager[baseModuleName];
-
-        if (!baseModule) {
-          warning(false, 'Base module "%s" does not exist', baseModuleName);
-          baseModuleName = null;
-        } else {
-          bubblingEventTypes = babelHelpers.extends({}, baseModule.bubblingEventTypes, bubblingEventTypes);
-          directEventTypes = babelHelpers.extends({}, baseModule.directEventTypes, directEventTypes);
-          nativeProps = babelHelpers.extends({}, baseModule.NativeProps, nativeProps);
-          baseModuleName = baseModule.baseModuleName;
-        }
+      for (var key in obj) {
+        StyleSheetValidation.validateStyle(key, obj);
+        result[key] = obj[key] && ReactNativePropRegistry.register(obj[key]);
       }
 
-      viewConfig.bubblingEventTypes = bubblingEventTypes;
-      viewConfig.directEventTypes = directEventTypes;
-
-      for (var key in nativeProps) {
-        var useAttribute = false;
-        var attribute = {};
-        var differ = TypeToDifferMap[nativeProps[key]];
-
-        if (differ) {
-          attribute.diff = differ;
-          useAttribute = true;
-        }
-
-        var processor = TypeToProcessorMap[nativeProps[key]];
-
-        if (processor) {
-          attribute.process = processor;
-          useAttribute = true;
-        }
-
-        viewConfig.validAttributes[key] = useAttribute ? attribute : true;
-      }
-
-      viewConfig.validAttributes.style = ReactNativeStyleAttributes;
-
-      if (!hasAttachedDefaultEventTypes) {
-        attachDefaultEventTypes(viewConfig);
-        hasAttachedDefaultEventTypes = true;
-      }
-
-      ReactNativeBridgeEventPlugin.processEventTypes(viewConfig);
-      return viewConfig;
+      return result;
     }
-
-    return createReactNativeComponentClass(viewName, getViewConfig);
-  }
-
-  var TypeToDifferMap = {
-    CATransform3D: matricesDiffer,
-    CGPoint: pointsDiffer,
-    CGSize: sizesDiffer,
-    UIEdgeInsets: insetsDiffer
   };
-
-  function processColorArray(colors) {
-    return colors && colors.map(processColor);
-  }
-
-  var TypeToProcessorMap = {
-    CGColor: processColor,
-    CGColorArray: processColorArray,
-    UIColor: processColor,
-    UIColorArray: processColorArray,
-    CGImage: resolveAssetSource,
-    UIImage: resolveAssetSource,
-    RCTImageSource: resolveAssetSource,
-    Color: processColor,
-    ColorArray: processColorArray
-  };
-  module.exports = requireNativeComponent;
-},146,[958,147,115,97,148,149,150,151,128,152,131,156,15,29]);
-__d(function (global, _require2, module, exports, _dependencyMap) {
+},111,[112,102,115,132,101]);
+__d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
-  var _require = _require2(_dependencyMap[0]),
-      __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = _require.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
+  var Dimensions = _require(_dependencyMap[0]);
 
-  module.exports = __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED.ReactNativeBridgeEventPlugin;
-},147,[46]);
+  var PixelRatio = function () {
+    function PixelRatio() {
+      babelHelpers.classCallCheck(this, PixelRatio);
+    }
+
+    babelHelpers.createClass(PixelRatio, null, [{
+      key: "get",
+      value: function get() {
+        return Dimensions.get('window').scale;
+      }
+    }, {
+      key: "getFontScale",
+      value: function getFontScale() {
+        return Dimensions.get('window').fontScale || PixelRatio.get();
+      }
+    }, {
+      key: "getPixelSizeForLayoutSize",
+      value: function getPixelSizeForLayoutSize(layoutSize) {
+        return Math.round(layoutSize * PixelRatio.get());
+      }
+    }, {
+      key: "roundToNearestPixel",
+      value: function roundToNearestPixel(layoutSize) {
+        var ratio = PixelRatio.get();
+        return Math.round(layoutSize * ratio) / ratio;
+      }
+    }, {
+      key: "startDetecting",
+      value: function startDetecting() {}
+    }]);
+    return PixelRatio;
+  }();
+
+  module.exports = PixelRatio;
+},112,[113]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var EventEmitter = _require(_dependencyMap[0]);
+
+  var Platform = _require(_dependencyMap[1]);
+
+  var RCTDeviceEventEmitter = _require(_dependencyMap[2]);
+
+  var invariant = _require(_dependencyMap[3]);
+
+  var eventEmitter = new EventEmitter();
+  var dimensionsInitialized = false;
+  var dimensions = {};
+
+  var Dimensions = function () {
+    function Dimensions() {
+      babelHelpers.classCallCheck(this, Dimensions);
+    }
+
+    babelHelpers.createClass(Dimensions, null, [{
+      key: "set",
+      value: function set(dims) {
+        if (dims && dims.windowPhysicalPixels) {
+          dims = JSON.parse(JSON.stringify(dims));
+          var windowPhysicalPixels = dims.windowPhysicalPixels;
+          dims.window = {
+            width: windowPhysicalPixels.width / windowPhysicalPixels.scale,
+            height: windowPhysicalPixels.height / windowPhysicalPixels.scale,
+            scale: windowPhysicalPixels.scale,
+            fontScale: windowPhysicalPixels.fontScale
+          };
+          {
+            dims.screen = dims.window;
+          }
+          delete dims.windowPhysicalPixels;
+        }
+
+        babelHelpers.extends(dimensions, dims);
+
+        if (dimensionsInitialized) {
+          eventEmitter.emit('change', {
+            window: dimensions.window,
+            screen: dimensions.screen
+          });
+        } else {
+          dimensionsInitialized = true;
+        }
+      }
+    }, {
+      key: "get",
+      value: function get(dim) {
+        invariant(dimensions[dim], 'No dimension set for key ' + dim);
+        return dimensions[dim];
+      }
+    }, {
+      key: "addEventListener",
+      value: function addEventListener(type, handler) {
+        invariant(type === 'change', 'Trying to subscribe to unknown event: "%s"', type);
+        eventEmitter.addListener(type, handler);
+      }
+    }, {
+      key: "removeEventListener",
+      value: function removeEventListener(type, handler) {
+        invariant(type === 'change', 'Trying to remove listener for unknown event: "%s"', type);
+        eventEmitter.removeListener(type, handler);
+      }
+    }]);
+    return Dimensions;
+  }();
+
+  var dims = global.nativeExtensions && global.nativeExtensions.DeviceInfo && global.nativeExtensions.DeviceInfo.Dimensions;
+  var nativeExtensionsEnabled = true;
+
+  if (!dims) {
+    var DeviceInfo = _require(_dependencyMap[4]);
+
+    dims = DeviceInfo.Dimensions;
+    nativeExtensionsEnabled = false;
+  }
+
+  invariant(dims, 'Either DeviceInfo native extension or DeviceInfo Native Module must be registered');
+  Dimensions.set(dims);
+
+  if (!nativeExtensionsEnabled) {
+    RCTDeviceEventEmitter.addListener('didUpdateDimensions', function (update) {
+      Dimensions.set(update);
+    });
+  }
+
+  module.exports = Dimensions;
+},113,[38,25,37,15,114]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var DeviceInfo = _require(_dependencyMap[0]).DeviceInfo;
+
+  var invariant = _require(_dependencyMap[1]);
+
+  invariant(DeviceInfo, 'DeviceInfo native module is not installed correctly');
+  module.exports = DeviceInfo;
+},114,[17,15]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -14874,6 +14370,223 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
+  var ReactPropTypes = _require(_dependencyMap[0]);
+
+  var LayoutPropTypes = {
+    display: ReactPropTypes.oneOf(['none', 'flex']),
+    width: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    height: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    start: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    end: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    top: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    left: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    right: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    bottom: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    minWidth: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    maxWidth: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    minHeight: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    maxHeight: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    margin: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    marginVertical: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    marginHorizontal: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    marginTop: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    marginBottom: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    marginLeft: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    marginRight: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    marginStart: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    marginEnd: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    padding: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    paddingVertical: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    paddingHorizontal: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    paddingTop: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    paddingBottom: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    paddingLeft: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    paddingRight: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    paddingStart: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    paddingEnd: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    borderWidth: ReactPropTypes.number,
+    borderTopWidth: ReactPropTypes.number,
+    borderStartWidth: ReactPropTypes.number,
+    borderEndWidth: ReactPropTypes.number,
+    borderRightWidth: ReactPropTypes.number,
+    borderBottomWidth: ReactPropTypes.number,
+    borderLeftWidth: ReactPropTypes.number,
+    position: ReactPropTypes.oneOf(['absolute', 'relative']),
+    flexDirection: ReactPropTypes.oneOf(['row', 'row-reverse', 'column', 'column-reverse']),
+    flexWrap: ReactPropTypes.oneOf(['wrap', 'nowrap']),
+    justifyContent: ReactPropTypes.oneOf(['flex-start', 'flex-end', 'center', 'space-between', 'space-around', 'space-evenly']),
+    alignItems: ReactPropTypes.oneOf(['flex-start', 'flex-end', 'center', 'stretch', 'baseline']),
+    alignSelf: ReactPropTypes.oneOf(['auto', 'flex-start', 'flex-end', 'center', 'stretch', 'baseline']),
+    alignContent: ReactPropTypes.oneOf(['flex-start', 'flex-end', 'center', 'stretch', 'space-between', 'space-around']),
+    overflow: ReactPropTypes.oneOf(['visible', 'hidden', 'scroll']),
+    flex: ReactPropTypes.number,
+    flexGrow: ReactPropTypes.number,
+    flexShrink: ReactPropTypes.number,
+    flexBasis: ReactPropTypes.oneOfType([ReactPropTypes.number, ReactPropTypes.string]),
+    aspectRatio: ReactPropTypes.number,
+    zIndex: ReactPropTypes.number,
+    direction: ReactPropTypes.oneOf(['inherit', 'ltr', 'rtl'])
+  };
+  module.exports = LayoutPropTypes;
+},119,[120]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  {
+    module.exports = _require(_dependencyMap[0])();
+  }
+},120,[121]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var ReactPropTypesSecret = _require(_dependencyMap[0]);
+
+  function emptyFunction() {}
+
+  module.exports = function () {
+    function shim(props, propName, componentName, location, propFullName, secret) {
+      if (secret === ReactPropTypesSecret) {
+        return;
+      }
+
+      var err = new Error("Calling PropTypes validators directly is not supported by the `prop-types` package. Use PropTypes.checkPropTypes() to call them. Read more at http://fb.me/use-check-prop-types");
+      err.name = 'Invariant Violation';
+      throw err;
+    }
+
+    ;
+    shim.isRequired = shim;
+
+    function getShim() {
+      return shim;
+    }
+
+    ;
+    var ReactPropTypes = {
+      array: shim,
+      bool: shim,
+      func: shim,
+      number: shim,
+      object: shim,
+      string: shim,
+      symbol: shim,
+      any: shim,
+      arrayOf: getShim,
+      element: shim,
+      instanceOf: getShim,
+      node: shim,
+      objectOf: getShim,
+      oneOf: getShim,
+      oneOfType: getShim,
+      shape: getShim,
+      exact: getShim
+    };
+    ReactPropTypes.checkPropTypes = emptyFunction;
+    ReactPropTypes.PropTypes = ReactPropTypes;
+    return ReactPropTypes;
+  };
+},121,[122]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var ReactPropTypesSecret = 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED';
+  module.exports = ReactPropTypesSecret;
+},122,[]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var ColorPropType = _require(_dependencyMap[0]);
+
+  var ReactPropTypes = _require(_dependencyMap[1]);
+
+  var ShadowPropTypesIOS = {
+    shadowColor: ColorPropType,
+    shadowOffset: ReactPropTypes.shape({
+      width: ReactPropTypes.number,
+      height: ReactPropTypes.number
+    }),
+    shadowOpacity: ReactPropTypes.number,
+    shadowRadius: ReactPropTypes.number
+  };
+  module.exports = ShadowPropTypesIOS;
+},123,[43,120]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var ReactPropTypes = _require(_dependencyMap[0]);
+
+  var deprecatedPropType = _require(_dependencyMap[1]);
+
+  var TransformMatrixPropType = function TransformMatrixPropType(props, propName, componentName) {
+    if (props[propName]) {
+      return new Error("The transformMatrix style property is deprecated. Use `transform: [{ matrix: ... }]` instead.");
+    }
+  };
+
+  var DecomposedMatrixPropType = function DecomposedMatrixPropType(props, propName, componentName) {
+    if (props[propName]) {
+      return new Error("The decomposedMatrix style property is deprecated. Use `transform: [...]` instead.");
+    }
+  };
+
+  var TransformPropTypes = {
+    transform: ReactPropTypes.arrayOf(ReactPropTypes.oneOfType([ReactPropTypes.shape({
+      perspective: ReactPropTypes.number
+    }), ReactPropTypes.shape({
+      rotate: ReactPropTypes.string
+    }), ReactPropTypes.shape({
+      rotateX: ReactPropTypes.string
+    }), ReactPropTypes.shape({
+      rotateY: ReactPropTypes.string
+    }), ReactPropTypes.shape({
+      rotateZ: ReactPropTypes.string
+    }), ReactPropTypes.shape({
+      scale: ReactPropTypes.number
+    }), ReactPropTypes.shape({
+      scaleX: ReactPropTypes.number
+    }), ReactPropTypes.shape({
+      scaleY: ReactPropTypes.number
+    }), ReactPropTypes.shape({
+      translateX: ReactPropTypes.number
+    }), ReactPropTypes.shape({
+      translateY: ReactPropTypes.number
+    }), ReactPropTypes.shape({
+      skewX: ReactPropTypes.string
+    }), ReactPropTypes.shape({
+      skewY: ReactPropTypes.string
+    })])),
+    transformMatrix: TransformMatrixPropType,
+    decomposedMatrix: DecomposedMatrixPropType,
+    scaleX: deprecatedPropType(ReactPropTypes.number, 'Use the transform prop instead.'),
+    scaleY: deprecatedPropType(ReactPropTypes.number, 'Use the transform prop instead.'),
+    rotation: deprecatedPropType(ReactPropTypes.number, 'Use the transform prop instead.'),
+    translateX: deprecatedPropType(ReactPropTypes.number, 'Use the transform prop instead.'),
+    translateY: deprecatedPropType(ReactPropTypes.number, 'Use the transform prop instead.')
+  };
+  module.exports = TransformPropTypes;
+},124,[120,125]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var UIManager = _require(_dependencyMap[0]);
+
+  function deprecatedPropType(propType, explanation) {
+    return function validate(props, propName, componentName) {
+      if (!UIManager[componentName] && props[propName] !== undefined) {
+        console.warn("`" + propName + "` supplied to `" + componentName + "` has been deprecated. " + explanation);
+      }
+
+      for (var _len = arguments.length, rest = Array(_len > 3 ? _len - 3 : 0), _key = 3; _key < _len; _key++) {
+        rest[_key - 3] = arguments[_key];
+      }
+
+      return propType.apply(undefined, [props, propName, componentName].concat(rest));
+    };
+  }
+
+  module.exports = deprecatedPropType;
+},125,[97]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
   var ColorPropType = _require(_dependencyMap[0]);
 
   var ReactPropTypes = _require(_dependencyMap[1]);
@@ -14908,6 +14621,49 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
+  var ColorPropType = _require(_dependencyMap[0]);
+
+  var LayoutPropTypes = _require(_dependencyMap[1]);
+
+  var ReactPropTypes = _require(_dependencyMap[2]);
+
+  var ShadowPropTypesIOS = _require(_dependencyMap[3]);
+
+  var TransformPropTypes = _require(_dependencyMap[4]);
+
+  var ViewStylePropTypes = babelHelpers.extends({}, LayoutPropTypes, ShadowPropTypesIOS, TransformPropTypes, {
+    backfaceVisibility: ReactPropTypes.oneOf(['visible', 'hidden']),
+    backgroundColor: ColorPropType,
+    borderColor: ColorPropType,
+    borderTopColor: ColorPropType,
+    borderRightColor: ColorPropType,
+    borderBottomColor: ColorPropType,
+    borderLeftColor: ColorPropType,
+    borderStartColor: ColorPropType,
+    borderEndColor: ColorPropType,
+    borderRadius: ReactPropTypes.number,
+    borderTopLeftRadius: ReactPropTypes.number,
+    borderTopRightRadius: ReactPropTypes.number,
+    borderTopStartRadius: ReactPropTypes.number,
+    borderTopEndRadius: ReactPropTypes.number,
+    borderBottomLeftRadius: ReactPropTypes.number,
+    borderBottomRightRadius: ReactPropTypes.number,
+    borderBottomStartRadius: ReactPropTypes.number,
+    borderBottomEndRadius: ReactPropTypes.number,
+    borderStyle: ReactPropTypes.oneOf(['solid', 'dotted', 'dashed']),
+    borderWidth: ReactPropTypes.number,
+    borderTopWidth: ReactPropTypes.number,
+    borderRightWidth: ReactPropTypes.number,
+    borderBottomWidth: ReactPropTypes.number,
+    borderLeftWidth: ReactPropTypes.number,
+    opacity: ReactPropTypes.number,
+    elevation: ReactPropTypes.number
+  });
+  module.exports = ViewStylePropTypes;
+},127,[43,119,120,123,124]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
   var Platform = _require(_dependencyMap[0]);
 
   var normalizeColor = _require(_dependencyMap[1]);
@@ -14924,14 +14680,11 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     }
 
     int32Color = (int32Color << 24 | int32Color >>> 8) >>> 0;
-    {
-      int32Color = int32Color | 0x0;
-    }
     return int32Color;
   }
 
   module.exports = processColor;
-},128,[958,44]);
+},128,[25,44]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -15094,7 +14847,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   }
 
   module.exports = processTransform;
-},129,[130,958,15,23]);
+},129,[130,25,15,23]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -15498,6 +15251,633 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
   module.exports = sizesDiffer;
 },131,[]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var ImageStylePropTypes = _require(_dependencyMap[0]);
+
+  var TextStylePropTypes = _require(_dependencyMap[1]);
+
+  var ViewStylePropTypes = _require(_dependencyMap[2]);
+
+  var invariant = _require(_dependencyMap[3]);
+
+  var ReactPropTypesSecret = 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED';
+
+  var StyleSheetValidation = function () {
+    function StyleSheetValidation() {
+      babelHelpers.classCallCheck(this, StyleSheetValidation);
+    }
+
+    babelHelpers.createClass(StyleSheetValidation, null, [{
+      key: "validateStyleProp",
+      value: function validateStyleProp(prop, style, caller) {
+        {
+          return;
+        }
+
+        if (allStylePropTypes[prop] === undefined) {
+          var message1 = '"' + prop + '" is not a valid style property.';
+          var message2 = '\nValid style props: ' + JSON.stringify(Object.keys(allStylePropTypes).sort(), null, '  ');
+          styleError(message1, style, caller, message2);
+        }
+
+        var error = allStylePropTypes[prop](style, prop, caller, 'prop', null, ReactPropTypesSecret);
+
+        if (error) {
+          styleError(error.message, style, caller);
+        }
+      }
+    }, {
+      key: "validateStyle",
+      value: function validateStyle(name, styles) {
+        {
+          return;
+        }
+
+        for (var prop in styles[name]) {
+          StyleSheetValidation.validateStyleProp(prop, styles[name], 'StyleSheet ' + name);
+        }
+      }
+    }, {
+      key: "addValidStylePropTypes",
+      value: function addValidStylePropTypes(stylePropTypes) {
+        for (var key in stylePropTypes) {
+          allStylePropTypes[key] = stylePropTypes[key];
+        }
+      }
+    }]);
+    return StyleSheetValidation;
+  }();
+
+  var styleError = function styleError(message1, style, caller, message2) {
+    invariant(false, message1 + '\n' + (caller || '<<unknown>>') + ': ' + JSON.stringify(style, null, '  ') + (message2 || ''));
+  };
+
+  var allStylePropTypes = {};
+  StyleSheetValidation.addValidStylePropTypes(ImageStylePropTypes);
+  StyleSheetValidation.addValidStylePropTypes(TextStylePropTypes);
+  StyleSheetValidation.addValidStylePropTypes(ViewStylePropTypes);
+  module.exports = StyleSheetValidation;
+},132,[116,126,127,15]);
+__d(function (global, _require2, module, exports, _dependencyMap) {
+  'use strict';
+
+  var _class, _temp2;
+
+  var Platform = _require2(_dependencyMap[0]);
+
+  var React = _require2(_dependencyMap[1]);
+
+  var ReactNative = _require2(_dependencyMap[2]);
+
+  var ReactNativeStyleAttributes = _require2(_dependencyMap[3]);
+
+  var ReactNativeViewAttributes = _require2(_dependencyMap[4]);
+
+  var ViewPropTypes = _require2(_dependencyMap[5]);
+
+  var _require = _require2(_dependencyMap[6]),
+      ViewContextTypes = _require.ViewContextTypes;
+
+  var invariant = _require2(_dependencyMap[7]);
+
+  var requireNativeComponent = _require2(_dependencyMap[8]);
+
+  var View = (_temp2 = _class = function (_ReactNative$NativeCo) {
+    babelHelpers.inherits(View, _ReactNative$NativeCo);
+
+    function View() {
+      var _ref;
+
+      var _temp, _this, _ret;
+
+      babelHelpers.classCallCheck(this, View);
+
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      return _ret = (_temp = (_this = babelHelpers.possibleConstructorReturn(this, (_ref = View.__proto__ || Object.getPrototypeOf(View)).call.apply(_ref, [this].concat(args))), _this), _this.viewConfig = {
+        uiViewClassName: 'RCTView',
+        validAttributes: ReactNativeViewAttributes.RCTView
+      }, _temp), babelHelpers.possibleConstructorReturn(_this, _ret);
+    }
+
+    babelHelpers.createClass(View, [{
+      key: "getChildContext",
+      value: function getChildContext() {
+        return {
+          isInAParentText: false
+        };
+      }
+    }, {
+      key: "render",
+      value: function render() {
+        invariant(!(this.context.isInAParentText && false), 'Nesting of <View> within <Text> is not supported on Android.');
+        return React.createElement(RCTView, this.props);
+      }
+    }]);
+    return View;
+  }(ReactNative.NativeComponent), _class.propTypes = ViewPropTypes, _class.childContextTypes = ViewContextTypes, _temp2);
+  var RCTView = requireNativeComponent('RCTView', View, {
+    nativeOnly: {
+      nativeBackgroundAndroid: true,
+      nativeForegroundAndroid: true
+    }
+  });
+  var ViewToExport = RCTView;
+  ViewToExport = View;
+  module.exports = ViewToExport;
+},133,[25,103,46,115,134,135,145,15,146]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var ReactNativeStyleAttributes = _require(_dependencyMap[0]);
+
+  var ReactNativeViewAttributes = {};
+  ReactNativeViewAttributes.UIView = {
+    pointerEvents: true,
+    accessible: true,
+    accessibilityActions: true,
+    accessibilityLabel: true,
+    accessibilityComponentType: true,
+    accessibilityLiveRegion: true,
+    accessibilityTraits: true,
+    importantForAccessibility: true,
+    nativeID: true,
+    testID: true,
+    renderToHardwareTextureAndroid: true,
+    shouldRasterizeIOS: true,
+    onLayout: true,
+    onAccessibilityAction: true,
+    onAccessibilityTap: true,
+    onMagicTap: true,
+    collapsable: true,
+    needsOffscreenAlphaCompositing: true,
+    style: ReactNativeStyleAttributes
+  };
+  ReactNativeViewAttributes.RCTView = babelHelpers.extends({}, ReactNativeViewAttributes.UIView, {
+    removeClippedSubviews: true
+  });
+  module.exports = ReactNativeViewAttributes;
+},134,[115]);
+__d(function (global, _require2, module, exports, _dependencyMap) {
+  'use strict';
+
+  var React = _require2(_dependencyMap[0]);
+
+  var EdgeInsetsPropType = _require2(_dependencyMap[1]);
+
+  var PlatformViewPropTypes = _require2(_dependencyMap[2]);
+
+  var PropTypes = _require2(_dependencyMap[3]);
+
+  var StyleSheetPropType = _require2(_dependencyMap[4]);
+
+  var ViewStylePropTypes = _require2(_dependencyMap[5]);
+
+  var _require = _require2(_dependencyMap[6]),
+      AccessibilityComponentTypes = _require.AccessibilityComponentTypes,
+      AccessibilityTraits = _require.AccessibilityTraits;
+
+  var stylePropType = StyleSheetPropType(ViewStylePropTypes);
+  module.exports = babelHelpers.extends({}, PlatformViewPropTypes, {
+    accessible: PropTypes.bool,
+    accessibilityLabel: PropTypes.node,
+    accessibilityActions: PropTypes.arrayOf(PropTypes.string),
+    accessibilityComponentType: PropTypes.oneOf(AccessibilityComponentTypes),
+    accessibilityLiveRegion: PropTypes.oneOf(['none', 'polite', 'assertive']),
+    importantForAccessibility: PropTypes.oneOf(['auto', 'yes', 'no', 'no-hide-descendants']),
+    accessibilityTraits: PropTypes.oneOfType([PropTypes.oneOf(AccessibilityTraits), PropTypes.arrayOf(PropTypes.oneOf(AccessibilityTraits))]),
+    accessibilityViewIsModal: PropTypes.bool,
+    accessibilityElementsHidden: PropTypes.bool,
+    onAccessibilityAction: PropTypes.func,
+    onAccessibilityTap: PropTypes.func,
+    onMagicTap: PropTypes.func,
+    testID: PropTypes.string,
+    nativeID: PropTypes.string,
+    onResponderGrant: PropTypes.func,
+    onResponderMove: PropTypes.func,
+    onResponderReject: PropTypes.func,
+    onResponderRelease: PropTypes.func,
+    onResponderTerminate: PropTypes.func,
+    onResponderTerminationRequest: PropTypes.func,
+    onStartShouldSetResponder: PropTypes.func,
+    onStartShouldSetResponderCapture: PropTypes.func,
+    onMoveShouldSetResponder: PropTypes.func,
+    onMoveShouldSetResponderCapture: PropTypes.func,
+    hitSlop: EdgeInsetsPropType,
+    onLayout: PropTypes.func,
+    pointerEvents: PropTypes.oneOf(['box-none', 'none', 'box-only', 'auto']),
+    style: stylePropType,
+    removeClippedSubviews: PropTypes.bool,
+    renderToHardwareTextureAndroid: PropTypes.bool,
+    shouldRasterizeIOS: PropTypes.bool,
+    collapsable: PropTypes.bool,
+    needsOffscreenAlphaCompositing: PropTypes.bool
+  });
+},135,[103,136,141,120,143,127,144]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var PropTypes = _require(_dependencyMap[0]);
+
+  var createStrictShapeTypeChecker = _require(_dependencyMap[1]);
+
+  var EdgeInsetsPropType = createStrictShapeTypeChecker({
+    top: PropTypes.number,
+    left: PropTypes.number,
+    bottom: PropTypes.number,
+    right: PropTypes.number
+  });
+  module.exports = EdgeInsetsPropType;
+},136,[120,137]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var invariant = _require(_dependencyMap[0]);
+
+  var merge = _require(_dependencyMap[1]);
+
+  function createStrictShapeTypeChecker(shapeTypes) {
+    function checkType(isRequired, props, propName, componentName, location) {
+      if (!props[propName]) {
+        if (isRequired) {
+          invariant(false, "Required object `" + propName + "` was not specified in " + ("`" + componentName + "`."));
+        }
+
+        return;
+      }
+
+      var propValue = props[propName];
+      var propType = typeof propValue;
+      var locationName = location || '(unknown)';
+
+      if (propType !== 'object') {
+        invariant(false, "Invalid " + locationName + " `" + propName + "` of type `" + propType + "` " + ("supplied to `" + componentName + "`, expected `object`."));
+      }
+
+      var allKeys = merge(props[propName], shapeTypes);
+
+      for (var _len = arguments.length, rest = Array(_len > 5 ? _len - 5 : 0), _key = 5; _key < _len; _key++) {
+        rest[_key - 5] = arguments[_key];
+      }
+
+      for (var key in allKeys) {
+        var checker = shapeTypes[key];
+
+        if (!checker) {
+          invariant(false, "Invalid props." + propName + " key `" + key + "` supplied to `" + componentName + "`." + '\nBad object: ' + JSON.stringify(props[propName], null, '  ') + '\nValid keys: ' + JSON.stringify(Object.keys(shapeTypes), null, '  '));
+        }
+
+        var error = checker.apply(undefined, [propValue, key, componentName, location].concat(rest));
+
+        if (error) {
+          invariant(false, error.message + '\nBad object: ' + JSON.stringify(props[propName], null, '  '));
+        }
+      }
+    }
+
+    function chainedCheckType(props, propName, componentName, location) {
+      for (var _len2 = arguments.length, rest = Array(_len2 > 4 ? _len2 - 4 : 0), _key2 = 4; _key2 < _len2; _key2++) {
+        rest[_key2 - 4] = arguments[_key2];
+      }
+
+      return checkType.apply(undefined, [false, props, propName, componentName, location].concat(rest));
+    }
+
+    chainedCheckType.isRequired = checkType.bind(null, true);
+    return chainedCheckType;
+  }
+
+  module.exports = createStrictShapeTypeChecker;
+},137,[15,138]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  "use strict";
+
+  var mergeInto = _require(_dependencyMap[0]);
+
+  var merge = function merge(one, two) {
+    var result = {};
+    mergeInto(result, one);
+    mergeInto(result, two);
+    return result;
+  };
+
+  module.exports = merge;
+},138,[139]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  "use strict";
+
+  var mergeHelpers = _require(_dependencyMap[0]);
+
+  var checkMergeObjectArg = mergeHelpers.checkMergeObjectArg;
+  var checkMergeIntoObjectArg = mergeHelpers.checkMergeIntoObjectArg;
+
+  function mergeInto(one, two) {
+    checkMergeIntoObjectArg(one);
+
+    if (two != null) {
+      checkMergeObjectArg(two);
+
+      for (var key in two) {
+        if (!two.hasOwnProperty(key)) {
+          continue;
+        }
+
+        one[key] = two[key];
+      }
+    }
+  }
+
+  module.exports = mergeInto;
+},139,[140]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var invariant = _require(_dependencyMap[0]);
+
+  var MAX_MERGE_DEPTH = 36;
+
+  var isTerminal = function isTerminal(o) {
+    return typeof o !== 'object' || o instanceof Date || o === null;
+  };
+
+  var mergeHelpers = {
+    MAX_MERGE_DEPTH: MAX_MERGE_DEPTH,
+    isTerminal: isTerminal,
+    normalizeMergeArg: function normalizeMergeArg(arg) {
+      return arg === undefined || arg === null ? {} : arg;
+    },
+    checkMergeArrayArgs: function checkMergeArrayArgs(one, two) {
+      invariant(Array.isArray(one) && Array.isArray(two), 'Tried to merge arrays, instead got %s and %s.', one, two);
+    },
+    checkMergeObjectArgs: function checkMergeObjectArgs(one, two) {
+      mergeHelpers.checkMergeObjectArg(one);
+      mergeHelpers.checkMergeObjectArg(two);
+    },
+    checkMergeObjectArg: function checkMergeObjectArg(arg) {
+      invariant(!isTerminal(arg) && !Array.isArray(arg), 'Tried to merge an object, instead got %s.', arg);
+    },
+    checkMergeIntoObjectArg: function checkMergeIntoObjectArg(arg) {
+      invariant((!isTerminal(arg) || typeof arg === 'function') && !Array.isArray(arg), 'Tried to merge into an object, instead got %s.', arg);
+    },
+    checkMergeLevel: function checkMergeLevel(level) {
+      invariant(level < MAX_MERGE_DEPTH, "Maximum deep merge depth exceeded. You may be attempting to merge circular structures in an unsupported way.");
+    },
+    checkArrayStrategy: function checkArrayStrategy(strategy) {
+      invariant(strategy === undefined || strategy in mergeHelpers.ArrayStrategies, "You must provide an array strategy to deep merge functions to instruct the deep merge how to resolve merging two arrays.");
+    },
+    ArrayStrategies: {
+      Clobber: 'Clobber',
+      Concat: 'Concat',
+      IndexByIndex: 'IndexByIndex'
+    }
+  };
+  module.exports = mergeHelpers;
+},140,[15]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  var Platform = _require(_dependencyMap[0]);
+
+  var TVViewPropTypes = {};
+
+  if (Platform.isTV || false) {
+    TVViewPropTypes = _require(_dependencyMap[1]);
+  }
+
+  module.exports = TVViewPropTypes;
+},141,[25,142]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var PropTypes = _require(_dependencyMap[0]);
+
+  var TVViewPropTypes = {
+    isTVSelectable: PropTypes.bool,
+    hasTVPreferredFocus: PropTypes.bool,
+    tvParallaxProperties: PropTypes.object,
+    tvParallaxShiftDistanceX: PropTypes.number,
+    tvParallaxShiftDistanceY: PropTypes.number,
+    tvParallaxTiltAngle: PropTypes.number,
+    tvParallaxMagnification: PropTypes.number
+  };
+  module.exports = TVViewPropTypes;
+},142,[120]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var createStrictShapeTypeChecker = _require(_dependencyMap[0]);
+
+  var flattenStyle = _require(_dependencyMap[1]);
+
+  function StyleSheetPropType(shape) {
+    var shapePropType = createStrictShapeTypeChecker(shape);
+    return function (props, propName, componentName, location) {
+      var newProps = props;
+
+      if (props[propName]) {
+        newProps = {};
+        newProps[propName] = flattenStyle(props[propName]);
+      }
+
+      for (var _len = arguments.length, rest = Array(_len > 4 ? _len - 4 : 0), _key = 4; _key < _len; _key++) {
+        rest[_key - 4] = arguments[_key];
+      }
+
+      return shapePropType.apply(undefined, [newProps, propName, componentName, location].concat(rest));
+    };
+  }
+
+  module.exports = StyleSheetPropType;
+},143,[137,101]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  module.exports = {
+    AccessibilityTraits: ['none', 'button', 'link', 'header', 'search', 'image', 'selected', 'plays', 'key', 'text', 'summary', 'disabled', 'frequentUpdates', 'startsMedia', 'adjustable', 'allowsDirectInteraction', 'pageTurn'],
+    AccessibilityComponentTypes: ['none', 'button', 'radiobutton_checked', 'radiobutton_unchecked']
+  };
+},144,[]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  var PropTypes = _require(_dependencyMap[0]);
+
+  var ViewContextTypes = exports.ViewContextTypes = {
+    isInAParentText: PropTypes.bool
+  };
+},145,[120]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var Platform = _require(_dependencyMap[0]);
+
+  var ReactNativeBridgeEventPlugin = _require(_dependencyMap[1]);
+
+  var ReactNativeStyleAttributes = _require(_dependencyMap[2]);
+
+  var UIManager = _require(_dependencyMap[3]);
+
+  var createReactNativeComponentClass = _require(_dependencyMap[4]);
+
+  var insetsDiffer = _require(_dependencyMap[5]);
+
+  var matricesDiffer = _require(_dependencyMap[6]);
+
+  var pointsDiffer = _require(_dependencyMap[7]);
+
+  var processColor = _require(_dependencyMap[8]);
+
+  var resolveAssetSource = _require(_dependencyMap[9]);
+
+  var sizesDiffer = _require(_dependencyMap[10]);
+
+  var verifyPropTypes = _require(_dependencyMap[11]);
+
+  var invariant = _require(_dependencyMap[12]);
+
+  var warning = _require(_dependencyMap[13]);
+
+  var hasAttachedDefaultEventTypes = false;
+
+  function requireNativeComponent(viewName, componentInterface, extraConfig) {
+    function attachDefaultEventTypes(viewConfig) {}
+
+    function merge(destination, source) {
+      if (!source) {
+        return destination;
+      }
+
+      if (!destination) {
+        return source;
+      }
+
+      for (var key in source) {
+        if (!source.hasOwnProperty(key)) {
+          continue;
+        }
+
+        var sourceValue = source[key];
+
+        if (destination.hasOwnProperty(key)) {
+          var destinationValue = destination[key];
+
+          if (typeof sourceValue === 'object' && typeof destinationValue === 'object') {
+            sourceValue = merge(destinationValue, sourceValue);
+          }
+        }
+
+        destination[key] = sourceValue;
+      }
+
+      return destination;
+    }
+
+    function getViewConfig() {
+      var viewConfig = UIManager[viewName];
+      invariant(viewConfig != null && !viewConfig.NativeProps != null, 'Native component for "%s" does not exist', viewName);
+      viewConfig.uiViewClassName = viewName;
+      viewConfig.validAttributes = {};
+
+      if (componentInterface) {
+        viewConfig.propTypes = typeof componentInterface.__propTypesSecretDontUseThesePlease === 'object' ? componentInterface.__propTypesSecretDontUseThesePlease : componentInterface.propTypes;
+      } else {
+        viewConfig.propTypes = null;
+      }
+
+      var baseModuleName = viewConfig.baseModuleName;
+      var bubblingEventTypes = viewConfig.bubblingEventTypes;
+      var directEventTypes = viewConfig.directEventTypes;
+      var nativeProps = viewConfig.NativeProps;
+
+      while (baseModuleName) {
+        var baseModule = UIManager[baseModuleName];
+
+        if (!baseModule) {
+          warning(false, 'Base module "%s" does not exist', baseModuleName);
+          baseModuleName = null;
+        } else {
+          bubblingEventTypes = babelHelpers.extends({}, baseModule.bubblingEventTypes, bubblingEventTypes);
+          directEventTypes = babelHelpers.extends({}, baseModule.directEventTypes, directEventTypes);
+          nativeProps = babelHelpers.extends({}, baseModule.NativeProps, nativeProps);
+          baseModuleName = baseModule.baseModuleName;
+        }
+      }
+
+      viewConfig.bubblingEventTypes = bubblingEventTypes;
+      viewConfig.directEventTypes = directEventTypes;
+
+      for (var key in nativeProps) {
+        var useAttribute = false;
+        var attribute = {};
+        var differ = TypeToDifferMap[nativeProps[key]];
+
+        if (differ) {
+          attribute.diff = differ;
+          useAttribute = true;
+        }
+
+        var processor = TypeToProcessorMap[nativeProps[key]];
+
+        if (processor) {
+          attribute.process = processor;
+          useAttribute = true;
+        }
+
+        viewConfig.validAttributes[key] = useAttribute ? attribute : true;
+      }
+
+      viewConfig.validAttributes.style = ReactNativeStyleAttributes;
+
+      if (!hasAttachedDefaultEventTypes) {
+        attachDefaultEventTypes(viewConfig);
+        hasAttachedDefaultEventTypes = true;
+      }
+
+      ReactNativeBridgeEventPlugin.processEventTypes(viewConfig);
+      return viewConfig;
+    }
+
+    return createReactNativeComponentClass(viewName, getViewConfig);
+  }
+
+  var TypeToDifferMap = {
+    CATransform3D: matricesDiffer,
+    CGPoint: pointsDiffer,
+    CGSize: sizesDiffer,
+    UIEdgeInsets: insetsDiffer
+  };
+
+  function processColorArray(colors) {
+    return colors && colors.map(processColor);
+  }
+
+  var TypeToProcessorMap = {
+    CGColor: processColor,
+    CGColorArray: processColorArray,
+    UIColor: processColor,
+    UIColorArray: processColorArray,
+    CGImage: resolveAssetSource,
+    UIImage: resolveAssetSource,
+    RCTImageSource: resolveAssetSource,
+    Color: processColor,
+    ColorArray: processColorArray
+  };
+  module.exports = requireNativeComponent;
+},146,[25,147,115,97,148,149,150,151,128,152,131,156,15,29]);
+__d(function (global, _require2, module, exports, _dependencyMap) {
+  'use strict';
+
+  var _require = _require2(_dependencyMap[0]),
+      __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = _require.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
+
+  module.exports = __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED.ReactNativeBridgeEventPlugin;
+},147,[46]);
 __d(function (global, _require2, module, exports, _dependencyMap) {
   'use strict';
 
@@ -15710,14 +16090,14 @@ __d(function (global, _require, module, exports, _dependencyMap) {
         }
 
         {
-          return this.isLoadedFromFileSystem() ? this.drawableFolderInBundle() : this.resourceIdentifierWithoutScale();
+          return this.scaledAssetURLNearBundle();
         }
       }
     }, {
       key: "assetServerURL",
       value: function assetServerURL() {
         invariant(!!this.serverUrl, 'need server to load from');
-        return this.fromSource(this.serverUrl + getScaledAssetPath(this.asset) + '?platform=' + "android" + '&hash=' + this.asset.hash);
+        return this.fromSource(this.serverUrl + getScaledAssetPath(this.asset) + '?platform=' + "ios" + '&hash=' + this.asset.hash);
       }
     }, {
       key: "scaledAssetPath",
@@ -15733,7 +16113,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     }, {
       key: "resourceIdentifierWithoutScale",
       value: function resourceIdentifierWithoutScale() {
-        invariant(true, 'resource identifiers work on Android');
+        invariant(false, 'resource identifiers work on Android');
         return this.fromSource(assetPathUtils.getAndroidResourceIdentifier(this.asset));
       }
     }, {
@@ -15769,156 +16149,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   }();
 
   module.exports = AssetSourceResolver;
-},154,[112,958,155,15]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  var Dimensions = _require(_dependencyMap[0]);
-
-  var PixelRatio = function () {
-    function PixelRatio() {
-      babelHelpers.classCallCheck(this, PixelRatio);
-    }
-
-    babelHelpers.createClass(PixelRatio, null, [{
-      key: "get",
-      value: function get() {
-        return Dimensions.get('window').scale;
-      }
-    }, {
-      key: "getFontScale",
-      value: function getFontScale() {
-        return Dimensions.get('window').fontScale || PixelRatio.get();
-      }
-    }, {
-      key: "getPixelSizeForLayoutSize",
-      value: function getPixelSizeForLayoutSize(layoutSize) {
-        return Math.round(layoutSize * PixelRatio.get());
-      }
-    }, {
-      key: "roundToNearestPixel",
-      value: function roundToNearestPixel(layoutSize) {
-        var ratio = PixelRatio.get();
-        return Math.round(layoutSize * ratio) / ratio;
-      }
-    }, {
-      key: "startDetecting",
-      value: function startDetecting() {}
-    }]);
-    return PixelRatio;
-  }();
-
-  module.exports = PixelRatio;
-},112,[113]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  var EventEmitter = _require(_dependencyMap[0]);
-
-  var Platform = _require(_dependencyMap[1]);
-
-  var RCTDeviceEventEmitter = _require(_dependencyMap[2]);
-
-  var invariant = _require(_dependencyMap[3]);
-
-  var eventEmitter = new EventEmitter();
-  var dimensionsInitialized = false;
-  var dimensions = {};
-
-  var Dimensions = function () {
-    function Dimensions() {
-      babelHelpers.classCallCheck(this, Dimensions);
-    }
-
-    babelHelpers.createClass(Dimensions, null, [{
-      key: "set",
-      value: function set(dims) {
-        if (dims && dims.windowPhysicalPixels) {
-          dims = JSON.parse(JSON.stringify(dims));
-          var windowPhysicalPixels = dims.windowPhysicalPixels;
-          dims.window = {
-            width: windowPhysicalPixels.width / windowPhysicalPixels.scale,
-            height: windowPhysicalPixels.height / windowPhysicalPixels.scale,
-            scale: windowPhysicalPixels.scale,
-            fontScale: windowPhysicalPixels.fontScale
-          };
-          {
-            var screenPhysicalPixels = dims.screenPhysicalPixels;
-            dims.screen = {
-              width: screenPhysicalPixels.width / screenPhysicalPixels.scale,
-              height: screenPhysicalPixels.height / screenPhysicalPixels.scale,
-              scale: screenPhysicalPixels.scale,
-              fontScale: screenPhysicalPixels.fontScale
-            };
-            delete dims.screenPhysicalPixels;
-          }
-          delete dims.windowPhysicalPixels;
-        }
-
-        babelHelpers.extends(dimensions, dims);
-
-        if (dimensionsInitialized) {
-          eventEmitter.emit('change', {
-            window: dimensions.window,
-            screen: dimensions.screen
-          });
-        } else {
-          dimensionsInitialized = true;
-        }
-      }
-    }, {
-      key: "get",
-      value: function get(dim) {
-        invariant(dimensions[dim], 'No dimension set for key ' + dim);
-        return dimensions[dim];
-      }
-    }, {
-      key: "addEventListener",
-      value: function addEventListener(type, handler) {
-        invariant(type === 'change', 'Trying to subscribe to unknown event: "%s"', type);
-        eventEmitter.addListener(type, handler);
-      }
-    }, {
-      key: "removeEventListener",
-      value: function removeEventListener(type, handler) {
-        invariant(type === 'change', 'Trying to remove listener for unknown event: "%s"', type);
-        eventEmitter.removeListener(type, handler);
-      }
-    }]);
-    return Dimensions;
-  }();
-
-  var dims = global.nativeExtensions && global.nativeExtensions.DeviceInfo && global.nativeExtensions.DeviceInfo.Dimensions;
-  var nativeExtensionsEnabled = true;
-
-  if (!dims) {
-    var DeviceInfo = _require(_dependencyMap[4]);
-
-    dims = DeviceInfo.Dimensions;
-    nativeExtensionsEnabled = false;
-  }
-
-  invariant(dims, 'Either DeviceInfo native extension or DeviceInfo Native Module must be registered');
-  Dimensions.set(dims);
-
-  if (!nativeExtensionsEnabled) {
-    RCTDeviceEventEmitter.addListener('didUpdateDimensions', function (update) {
-      Dimensions.set(update);
-    });
-  }
-
-  module.exports = Dimensions;
-},113,[38,958,37,15,114]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  var DeviceInfo = _require(_dependencyMap[0]).DeviceInfo;
-
-  var invariant = _require(_dependencyMap[1]);
-
-  invariant(DeviceInfo, 'DeviceInfo native module is not installed correctly');
-  module.exports = DeviceInfo;
-},114,[17,15]);
+},154,[112,25,155,15]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -16022,257 +16253,6 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
   module.exports = verifyPropTypes;
 },156,[115]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  var PixelRatio = _require(_dependencyMap[0]);
-
-  var ReactNativePropRegistry = _require(_dependencyMap[1]);
-
-  var ReactNativeStyleAttributes = _require(_dependencyMap[2]);
-
-  var StyleSheetValidation = _require(_dependencyMap[3]);
-
-  var flatten = _require(_dependencyMap[4]);
-
-  var hairlineWidth = PixelRatio.roundToNearestPixel(0.4);
-
-  if (hairlineWidth === 0) {
-    hairlineWidth = 1 / PixelRatio.get();
-  }
-
-  var absoluteFillObject = {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0
-  };
-  var absoluteFill = ReactNativePropRegistry.register(absoluteFillObject);
-  module.exports = {
-    hairlineWidth: hairlineWidth,
-    absoluteFill: absoluteFill,
-    absoluteFillObject: absoluteFillObject,
-    compose: function compose(style1, style2) {
-      if (style1 != null && style2 != null) {
-        return [style1, style2];
-      } else {
-        return style1 != null ? style1 : style2;
-      }
-    },
-    flatten: flatten,
-    setStyleAttributePreprocessor: function setStyleAttributePreprocessor(property, process) {
-      var value = void 0;
-
-      if (typeof ReactNativeStyleAttributes[property] === 'string') {
-        value = {};
-      } else if (typeof ReactNativeStyleAttributes[property] === 'object') {
-        value = ReactNativeStyleAttributes[property];
-      } else {
-        console.error(property + " is not a valid style attribute");
-        return;
-      }
-
-      ReactNativeStyleAttributes[property] = babelHelpers.extends({}, value, {
-        process: process
-      });
-    },
-    create: function create(obj) {
-      var result = {};
-
-      for (var key in obj) {
-        StyleSheetValidation.validateStyle(key, obj);
-        result[key] = obj[key] && ReactNativePropRegistry.register(obj[key]);
-      }
-
-      return result;
-    }
-  };
-},111,[112,102,115,132,101]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  var ImageStylePropTypes = _require(_dependencyMap[0]);
-
-  var TextStylePropTypes = _require(_dependencyMap[1]);
-
-  var ViewStylePropTypes = _require(_dependencyMap[2]);
-
-  var invariant = _require(_dependencyMap[3]);
-
-  var ReactPropTypesSecret = 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED';
-
-  var StyleSheetValidation = function () {
-    function StyleSheetValidation() {
-      babelHelpers.classCallCheck(this, StyleSheetValidation);
-    }
-
-    babelHelpers.createClass(StyleSheetValidation, null, [{
-      key: "validateStyleProp",
-      value: function validateStyleProp(prop, style, caller) {
-        {
-          return;
-        }
-
-        if (allStylePropTypes[prop] === undefined) {
-          var message1 = '"' + prop + '" is not a valid style property.';
-          var message2 = '\nValid style props: ' + JSON.stringify(Object.keys(allStylePropTypes).sort(), null, '  ');
-          styleError(message1, style, caller, message2);
-        }
-
-        var error = allStylePropTypes[prop](style, prop, caller, 'prop', null, ReactPropTypesSecret);
-
-        if (error) {
-          styleError(error.message, style, caller);
-        }
-      }
-    }, {
-      key: "validateStyle",
-      value: function validateStyle(name, styles) {
-        {
-          return;
-        }
-
-        for (var prop in styles[name]) {
-          StyleSheetValidation.validateStyleProp(prop, styles[name], 'StyleSheet ' + name);
-        }
-      }
-    }, {
-      key: "addValidStylePropTypes",
-      value: function addValidStylePropTypes(stylePropTypes) {
-        for (var key in stylePropTypes) {
-          allStylePropTypes[key] = stylePropTypes[key];
-        }
-      }
-    }]);
-    return StyleSheetValidation;
-  }();
-
-  var styleError = function styleError(message1, style, caller, message2) {
-    invariant(false, message1 + '\n' + (caller || '<<unknown>>') + ': ' + JSON.stringify(style, null, '  ') + (message2 || ''));
-  };
-
-  var allStylePropTypes = {};
-  StyleSheetValidation.addValidStylePropTypes(ImageStylePropTypes);
-  StyleSheetValidation.addValidStylePropTypes(TextStylePropTypes);
-  StyleSheetValidation.addValidStylePropTypes(ViewStylePropTypes);
-  module.exports = StyleSheetValidation;
-},132,[116,126,127,15]);
-__d(function (global, _require2, module, exports, _dependencyMap) {
-  'use strict';
-
-  var _class, _temp2;
-
-  var Platform = _require2(_dependencyMap[0]);
-
-  var React = _require2(_dependencyMap[1]);
-
-  var ReactNative = _require2(_dependencyMap[2]);
-
-  var ReactNativeStyleAttributes = _require2(_dependencyMap[3]);
-
-  var ReactNativeViewAttributes = _require2(_dependencyMap[4]);
-
-  var ViewPropTypes = _require2(_dependencyMap[5]);
-
-  var _require = _require2(_dependencyMap[6]),
-      ViewContextTypes = _require.ViewContextTypes;
-
-  var invariant = _require2(_dependencyMap[7]);
-
-  var requireNativeComponent = _require2(_dependencyMap[8]);
-
-  var View = (_temp2 = _class = function (_ReactNative$NativeCo) {
-    babelHelpers.inherits(View, _ReactNative$NativeCo);
-
-    function View() {
-      var _ref;
-
-      var _temp, _this, _ret;
-
-      babelHelpers.classCallCheck(this, View);
-
-      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-        args[_key] = arguments[_key];
-      }
-
-      return _ret = (_temp = (_this = babelHelpers.possibleConstructorReturn(this, (_ref = View.__proto__ || Object.getPrototypeOf(View)).call.apply(_ref, [this].concat(args))), _this), _this.viewConfig = {
-        uiViewClassName: 'RCTView',
-        validAttributes: ReactNativeViewAttributes.RCTView
-      }, _temp), babelHelpers.possibleConstructorReturn(_this, _ret);
-    }
-
-    babelHelpers.createClass(View, [{
-      key: "getChildContext",
-      value: function getChildContext() {
-        return {
-          isInAParentText: false
-        };
-      }
-    }, {
-      key: "render",
-      value: function render() {
-        invariant(!(this.context.isInAParentText && true), 'Nesting of <View> within <Text> is not supported on Android.');
-        return React.createElement(RCTView, this.props);
-      }
-    }]);
-    return View;
-  }(ReactNative.NativeComponent), _class.propTypes = ViewPropTypes, _class.childContextTypes = ViewContextTypes, _temp2);
-  var RCTView = requireNativeComponent('RCTView', View, {
-    nativeOnly: {
-      nativeBackgroundAndroid: true,
-      nativeForegroundAndroid: true
-    }
-  });
-  var ViewToExport = RCTView;
-  ViewToExport = View;
-  module.exports = ViewToExport;
-},133,[958,103,46,115,134,135,145,15,146]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  var ReactNativeStyleAttributes = _require(_dependencyMap[0]);
-
-  var ReactNativeViewAttributes = {};
-  ReactNativeViewAttributes.UIView = {
-    pointerEvents: true,
-    accessible: true,
-    accessibilityActions: true,
-    accessibilityLabel: true,
-    accessibilityComponentType: true,
-    accessibilityLiveRegion: true,
-    accessibilityTraits: true,
-    importantForAccessibility: true,
-    nativeID: true,
-    testID: true,
-    renderToHardwareTextureAndroid: true,
-    shouldRasterizeIOS: true,
-    onLayout: true,
-    onAccessibilityAction: true,
-    onAccessibilityTap: true,
-    onMagicTap: true,
-    collapsable: true,
-    needsOffscreenAlphaCompositing: true,
-    style: ReactNativeStyleAttributes
-  };
-  ReactNativeViewAttributes.RCTView = babelHelpers.extends({}, ReactNativeViewAttributes.UIView, {
-    removeClippedSubviews: true
-  });
-  module.exports = ReactNativeViewAttributes;
-},134,[115]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-
-  var PropTypes = _require(_dependencyMap[0]);
-
-  var ViewContextTypes = exports.ViewContextTypes = {
-    isInAParentText: PropTypes.bool
-  };
-},145,[120]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -18077,8 +18057,8 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
         if (color) {
           {
-            buttonStyles.push({
-              backgroundColor: color
+            textStyles.push({
+              color: color
             });
           }
         }
@@ -18092,8 +18072,8 @@ __d(function (global, _require, module, exports, _dependencyMap) {
         }
 
         invariant(typeof title === 'string', 'The title prop of a Button must be a string');
-        var formattedTitle = title.toUpperCase();
-        var Touchable = TouchableNativeFeedback;
+        var formattedTitle = title;
+        var Touchable = TouchableOpacity;
         return React.createElement(
           Touchable,
           {
@@ -18133,27 +18113,20 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     testID: PropTypes.string
   }, _temp);
   var styles = StyleSheet.create({
-    button: {
-      elevation: 4,
-      backgroundColor: '#2196F3',
-      borderRadius: 2
-    },
+    button: {},
     text: {
-      color: 'white',
+      color: '#007AFF',
       textAlign: 'center',
       padding: 8,
-      fontWeight: '500'
+      fontSize: 18
     },
-    buttonDisabled: {
-      elevation: 0,
-      backgroundColor: '#dfdfdf'
-    },
+    buttonDisabled: {},
     textDisabled: {
-      color: '#a1a1a1'
+      color: '#cdcdcd'
     }
   });
   module.exports = Button;
-},165,[43,958,103,120,111,166,961,176,133,15]);
+},165,[43,25,103,120,111,166,175,176,133,15]);
 __d(function (global, _require2, module, exports, _dependencyMap) {
   'use strict';
 
@@ -18854,7 +18827,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     }
   };
   module.exports = Touchable;
-},168,[169,958,171,103,46,172,173,97,133,118,44]);
+},168,[169,25,171,103,46,172,173,97,133,118,44]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -19006,6 +18979,10 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   }
 
   TVEventHandler.prototype.enable = function (component, callback) {
+    if (!TVNavigationEventEmitter) {
+      return;
+    }
+
     this.__nativeTVNavigationEventEmitter = new NativeEventEmitter(TVNavigationEventEmitter);
     this.__nativeTVNavigationEventListener = this.__nativeTVNavigationEventEmitter.addListener('onHWKeyEvent', function (data) {
       if (callback) {
@@ -19027,7 +19004,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   };
 
   module.exports = TVEventHandler;
-},172,[958,17,70]);
+},172,[25,17,70]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   "use strict";
 
@@ -19064,386 +19041,70 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
-  var Platform = _require(_dependencyMap[0]);
+  var _class, _temp;
 
-  var React = _require(_dependencyMap[1]);
+  var React = _require(_dependencyMap[0]);
 
-  var PropTypes = _require(_dependencyMap[2]);
+  var StyleSheet = _require(_dependencyMap[1]);
 
-  var ReactNative = _require(_dependencyMap[3]);
+  var Text = _require(_dependencyMap[2]);
 
-  var Touchable = _require(_dependencyMap[4]);
+  var View = _require(_dependencyMap[3]);
 
-  var TouchableWithoutFeedback = _require(_dependencyMap[5]);
+  var DummyTouchableNativeFeedback = (_temp = _class = function (_React$Component) {
+    babelHelpers.inherits(DummyTouchableNativeFeedback, _React$Component);
 
-  var UIManager = _require(_dependencyMap[6]);
+    function DummyTouchableNativeFeedback() {
+      babelHelpers.classCallCheck(this, DummyTouchableNativeFeedback);
+      return babelHelpers.possibleConstructorReturn(this, (DummyTouchableNativeFeedback.__proto__ || Object.getPrototypeOf(DummyTouchableNativeFeedback)).apply(this, arguments));
+    }
 
-  var createReactClass = _require(_dependencyMap[7]);
-
-  var ensurePositiveDelayProps = _require(_dependencyMap[8]);
-
-  var processColor = _require(_dependencyMap[9]);
-
-  var rippleBackgroundPropType = PropTypes.shape({
-    type: PropTypes.oneOf(['RippleAndroid']),
-    color: PropTypes.number,
-    borderless: PropTypes.bool
-  });
-  var themeAttributeBackgroundPropType = PropTypes.shape({
-    type: PropTypes.oneOf(['ThemeAttrAndroid']),
-    attribute: PropTypes.string.isRequired
-  });
-  var backgroundPropType = PropTypes.oneOfType([rippleBackgroundPropType, themeAttributeBackgroundPropType]);
-  var PRESS_RETENTION_OFFSET = {
-    top: 20,
-    left: 20,
-    right: 20,
-    bottom: 30
-  };
-  var TouchableNativeFeedback = createReactClass({
-    displayName: 'TouchableNativeFeedback',
-    propTypes: babelHelpers.extends({}, TouchableWithoutFeedback.propTypes, {
-      background: backgroundPropType,
-      hasTVPreferredFocus: PropTypes.bool,
-      useForeground: PropTypes.bool
-    }),
-    statics: {
-      SelectableBackground: function SelectableBackground() {
-        return {
-          type: 'ThemeAttrAndroid',
-          attribute: 'selectableItemBackground'
-        };
-      },
-      SelectableBackgroundBorderless: function SelectableBackgroundBorderless() {
-        return {
-          type: 'ThemeAttrAndroid',
-          attribute: 'selectableItemBackgroundBorderless'
-        };
-      },
-      Ripple: function Ripple(color, borderless) {
-        return {
-          type: 'RippleAndroid',
-          color: processColor(color),
-          borderless: borderless
-        };
-      },
-      canUseNativeForeground: function canUseNativeForeground() {
-        return Platform.Version >= 23;
+    babelHelpers.createClass(DummyTouchableNativeFeedback, [{
+      key: "render",
+      value: function render() {
+        return React.createElement(
+          View,
+          {
+            style: [styles.container, this.props.style]
+          },
+          React.createElement(
+            Text,
+            {
+              style: styles.info
+            },
+            "TouchableNativeFeedback is not supported on this platform!"
+          )
+        );
       }
+    }]);
+    return DummyTouchableNativeFeedback;
+  }(React.Component), _class.SelectableBackground = function () {
+    return {};
+  }, _class.SelectableBackgroundBorderless = function () {
+    return {};
+  }, _class.Ripple = function () {
+    return {};
+  }, _class.canUseNativeForeground = function () {
+    return false;
+  }, _temp);
+  var styles = StyleSheet.create({
+    container: {
+      height: 100,
+      width: 300,
+      backgroundColor: '#ffbcbc',
+      borderWidth: 1,
+      borderColor: 'red',
+      alignItems: 'center',
+      justifyContent: 'center',
+      margin: 10
     },
-    mixins: [Touchable.Mixin],
-    getDefaultProps: function getDefaultProps() {
-      return {
-        background: this.SelectableBackground()
-      };
-    },
-    getInitialState: function getInitialState() {
-      return this.touchableGetInitialState();
-    },
-    componentDidMount: function componentDidMount() {
-      ensurePositiveDelayProps(this.props);
-    },
-    UNSAFE_componentWillReceiveProps: function UNSAFE_componentWillReceiveProps(nextProps) {
-      ensurePositiveDelayProps(nextProps);
-    },
-    touchableHandleActivePressIn: function touchableHandleActivePressIn(e) {
-      this.props.onPressIn && this.props.onPressIn(e);
-
-      this._dispatchPressedStateChange(true);
-
-      if (this.pressInLocation) {
-        this._dispatchHotspotUpdate(this.pressInLocation.locationX, this.pressInLocation.locationY);
-      }
-    },
-    touchableHandleActivePressOut: function touchableHandleActivePressOut(e) {
-      this.props.onPressOut && this.props.onPressOut(e);
-
-      this._dispatchPressedStateChange(false);
-    },
-    touchableHandlePress: function touchableHandlePress(e) {
-      this.props.onPress && this.props.onPress(e);
-    },
-    touchableHandleLongPress: function touchableHandleLongPress(e) {
-      this.props.onLongPress && this.props.onLongPress(e);
-    },
-    touchableGetPressRectOffset: function touchableGetPressRectOffset() {
-      return this.props.pressRetentionOffset || PRESS_RETENTION_OFFSET;
-    },
-    touchableGetHitSlop: function touchableGetHitSlop() {
-      return this.props.hitSlop;
-    },
-    touchableGetHighlightDelayMS: function touchableGetHighlightDelayMS() {
-      return this.props.delayPressIn;
-    },
-    touchableGetLongPressDelayMS: function touchableGetLongPressDelayMS() {
-      return this.props.delayLongPress;
-    },
-    touchableGetPressOutDelayMS: function touchableGetPressOutDelayMS() {
-      return this.props.delayPressOut;
-    },
-    _handleResponderMove: function _handleResponderMove(e) {
-      this.touchableHandleResponderMove(e);
-
-      this._dispatchHotspotUpdate(e.nativeEvent.locationX, e.nativeEvent.locationY);
-    },
-    _dispatchHotspotUpdate: function _dispatchHotspotUpdate(destX, destY) {
-      UIManager.dispatchViewManagerCommand(ReactNative.findNodeHandle(this), UIManager.RCTView.Commands.hotspotUpdate, [destX || 0, destY || 0]);
-    },
-    _dispatchPressedStateChange: function _dispatchPressedStateChange(pressed) {
-      UIManager.dispatchViewManagerCommand(ReactNative.findNodeHandle(this), UIManager.RCTView.Commands.setPressed, [pressed]);
-    },
-    render: function render() {
-      var _babelHelpers$extends;
-
-      var child = React.Children.only(this.props.children);
-      var children = child.props.children;
-
-      if (Touchable.TOUCH_TARGET_DEBUG && child.type.displayName === 'View') {
-        if (!Array.isArray(children)) {
-          children = [children];
-        }
-
-        children.push(Touchable.renderDebugView({
-          color: 'brown',
-          hitSlop: this.props.hitSlop
-        }));
-      }
-
-      if (this.props.useForeground && !TouchableNativeFeedback.canUseNativeForeground()) {
-        console.warn("Requested foreground ripple, but it is not available on this version of Android. Consider calling TouchableNativeFeedback.canUseNativeForeground() and using a different Touchable if the result is false.");
-      }
-
-      var drawableProp = this.props.useForeground && TouchableNativeFeedback.canUseNativeForeground() ? 'nativeForegroundAndroid' : 'nativeBackgroundAndroid';
-      var childProps = babelHelpers.extends({}, child.props, (_babelHelpers$extends = {}, babelHelpers.defineProperty(_babelHelpers$extends, drawableProp, this.props.background), babelHelpers.defineProperty(_babelHelpers$extends, "accessible", this.props.accessible !== false), babelHelpers.defineProperty(_babelHelpers$extends, "accessibilityLabel", this.props.accessibilityLabel), babelHelpers.defineProperty(_babelHelpers$extends, "accessibilityComponentType", this.props.accessibilityComponentType), babelHelpers.defineProperty(_babelHelpers$extends, "accessibilityTraits", this.props.accessibilityTraits), babelHelpers.defineProperty(_babelHelpers$extends, "children", children), babelHelpers.defineProperty(_babelHelpers$extends, "testID", this.props.testID), babelHelpers.defineProperty(_babelHelpers$extends, "onLayout", this.props.onLayout), babelHelpers.defineProperty(_babelHelpers$extends, "hitSlop", this.props.hitSlop), babelHelpers.defineProperty(_babelHelpers$extends, "isTVSelectable", true), babelHelpers.defineProperty(_babelHelpers$extends, "hasTVPreferredFocus", this.props.hasTVPreferredFocus), babelHelpers.defineProperty(_babelHelpers$extends, "onStartShouldSetResponder", this.touchableHandleStartShouldSetResponder), babelHelpers.defineProperty(_babelHelpers$extends, "onResponderTerminationRequest", this.touchableHandleResponderTerminationRequest), babelHelpers.defineProperty(_babelHelpers$extends, "onResponderGrant", this.touchableHandleResponderGrant), babelHelpers.defineProperty(_babelHelpers$extends, "onResponderMove", this._handleResponderMove), babelHelpers.defineProperty(_babelHelpers$extends, "onResponderRelease", this.touchableHandleResponderRelease), babelHelpers.defineProperty(_babelHelpers$extends, "onResponderTerminate", this.touchableHandleResponderTerminate), _babelHelpers$extends));
-      return React.cloneElement(child, childProps);
+    info: {
+      color: '#333333',
+      margin: 20
     }
   });
-  module.exports = TouchableNativeFeedback;
-},961,[958,103,120,46,168,220,97,157,221,128]);
-__d(function (global, _require2, module, exports, _dependencyMap) {
-  'use strict';
-
-  var EdgeInsetsPropType = _require2(_dependencyMap[0]);
-
-  var React = _require2(_dependencyMap[1]);
-
-  var PropTypes = _require2(_dependencyMap[2]);
-
-  var TimerMixin = _require2(_dependencyMap[3]);
-
-  var Touchable = _require2(_dependencyMap[4]);
-
-  var createReactClass = _require2(_dependencyMap[5]);
-
-  var ensurePositiveDelayProps = _require2(_dependencyMap[6]);
-
-  var warning = _require2(_dependencyMap[7]);
-
-  var _require = _require2(_dependencyMap[8]),
-      AccessibilityComponentTypes = _require.AccessibilityComponentTypes,
-      AccessibilityTraits = _require.AccessibilityTraits;
-
-  var PRESS_RETENTION_OFFSET = {
-    top: 20,
-    left: 20,
-    right: 20,
-    bottom: 30
-  };
-  var TouchableWithoutFeedback = createReactClass({
-    displayName: 'TouchableWithoutFeedback',
-    mixins: [TimerMixin, Touchable.Mixin],
-    propTypes: {
-      accessible: PropTypes.bool,
-      accessibilityComponentType: PropTypes.oneOf(AccessibilityComponentTypes),
-      accessibilityTraits: PropTypes.oneOfType([PropTypes.oneOf(AccessibilityTraits), PropTypes.arrayOf(PropTypes.oneOf(AccessibilityTraits))]),
-      disabled: PropTypes.bool,
-      onPress: PropTypes.func,
-      onPressIn: PropTypes.func,
-      onPressOut: PropTypes.func,
-      onLayout: PropTypes.func,
-      onLongPress: PropTypes.func,
-      delayPressIn: PropTypes.number,
-      delayPressOut: PropTypes.number,
-      delayLongPress: PropTypes.number,
-      pressRetentionOffset: EdgeInsetsPropType,
-      hitSlop: EdgeInsetsPropType
-    },
-    getInitialState: function getInitialState() {
-      return this.touchableGetInitialState();
-    },
-    componentDidMount: function componentDidMount() {
-      ensurePositiveDelayProps(this.props);
-    },
-    UNSAFE_componentWillReceiveProps: function UNSAFE_componentWillReceiveProps(nextProps) {
-      ensurePositiveDelayProps(nextProps);
-    },
-    touchableHandlePress: function touchableHandlePress(e) {
-      this.props.onPress && this.props.onPress(e);
-    },
-    touchableHandleActivePressIn: function touchableHandleActivePressIn(e) {
-      this.props.onPressIn && this.props.onPressIn(e);
-    },
-    touchableHandleActivePressOut: function touchableHandleActivePressOut(e) {
-      this.props.onPressOut && this.props.onPressOut(e);
-    },
-    touchableHandleLongPress: function touchableHandleLongPress(e) {
-      this.props.onLongPress && this.props.onLongPress(e);
-    },
-    touchableGetPressRectOffset: function touchableGetPressRectOffset() {
-      return this.props.pressRetentionOffset || PRESS_RETENTION_OFFSET;
-    },
-    touchableGetHitSlop: function touchableGetHitSlop() {
-      return this.props.hitSlop;
-    },
-    touchableGetHighlightDelayMS: function touchableGetHighlightDelayMS() {
-      return this.props.delayPressIn || 0;
-    },
-    touchableGetLongPressDelayMS: function touchableGetLongPressDelayMS() {
-      return this.props.delayLongPress === 0 ? 0 : this.props.delayLongPress || 500;
-    },
-    touchableGetPressOutDelayMS: function touchableGetPressOutDelayMS() {
-      return this.props.delayPressOut || 0;
-    },
-    render: function render() {
-      var child = React.Children.only(this.props.children);
-      var children = child.props.children;
-      warning(!child.type || child.type.displayName !== 'Text', 'TouchableWithoutFeedback does not work well with Text children. Wrap children in a View instead. See ' + (child._owner && child._owner.getName && child._owner.getName() || '<unknown>'));
-
-      if (Touchable.TOUCH_TARGET_DEBUG && child.type && child.type.displayName === 'View') {
-        children = React.Children.toArray(children);
-        children.push(Touchable.renderDebugView({
-          color: 'red',
-          hitSlop: this.props.hitSlop
-        }));
-      }
-
-      var style = Touchable.TOUCH_TARGET_DEBUG && child.type && child.type.displayName === 'Text' ? [child.props.style, {
-        color: 'red'
-      }] : child.props.style;
-      return React.cloneElement(child, {
-        accessible: this.props.accessible !== false,
-        accessibilityLabel: this.props.accessibilityLabel,
-        accessibilityComponentType: this.props.accessibilityComponentType,
-        accessibilityTraits: this.props.accessibilityTraits,
-        nativeID: this.props.nativeID,
-        testID: this.props.testID,
-        onLayout: this.props.onLayout,
-        hitSlop: this.props.hitSlop,
-        onStartShouldSetResponder: this.touchableHandleStartShouldSetResponder,
-        onResponderTerminationRequest: this.touchableHandleResponderTerminationRequest,
-        onResponderGrant: this.touchableHandleResponderGrant,
-        onResponderMove: this.touchableHandleResponderMove,
-        onResponderRelease: this.touchableHandleResponderRelease,
-        onResponderTerminate: this.touchableHandleResponderTerminate,
-        style: style,
-        children: children
-      });
-    }
-  });
-  module.exports = TouchableWithoutFeedback;
-},220,[136,103,120,219,168,157,221,29,144]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  var GLOBAL = typeof window === 'undefined' ? global : window;
-
-  var setter = function setter(_setter, _clearer, array) {
-    return function (callback, delta) {
-      var id = _setter(function () {
-        _clearer.call(this, id);
-
-        callback.apply(this, arguments);
-      }.bind(this), delta);
-
-      if (!this[array]) {
-        this[array] = [id];
-      } else {
-        this[array].push(id);
-      }
-
-      return id;
-    };
-  };
-
-  var clearer = function clearer(_clearer, array) {
-    return function (id) {
-      if (this[array]) {
-        var index = this[array].indexOf(id);
-
-        if (index !== -1) {
-          this[array].splice(index, 1);
-        }
-      }
-
-      _clearer(id);
-    };
-  };
-
-  var _timeouts = 'TimerMixin_timeouts';
-
-  var _clearTimeout = clearer(GLOBAL.clearTimeout, _timeouts);
-
-  var _setTimeout = setter(GLOBAL.setTimeout, _clearTimeout, _timeouts);
-
-  var _intervals = 'TimerMixin_intervals';
-
-  var _clearInterval = clearer(GLOBAL.clearInterval, _intervals);
-
-  var _setInterval = setter(GLOBAL.setInterval, function () {}, _intervals);
-
-  var _immediates = 'TimerMixin_immediates';
-
-  var _clearImmediate = clearer(GLOBAL.clearImmediate, _immediates);
-
-  var _setImmediate = setter(GLOBAL.setImmediate, _clearImmediate, _immediates);
-
-  var _rafs = 'TimerMixin_rafs';
-
-  var _cancelAnimationFrame = clearer(GLOBAL.cancelAnimationFrame, _rafs);
-
-  var _requestAnimationFrame = setter(GLOBAL.requestAnimationFrame, _cancelAnimationFrame, _rafs);
-
-  var TimerMixin = {
-    componentWillUnmount: function componentWillUnmount() {
-      this[_timeouts] && this[_timeouts].forEach(function (id) {
-        GLOBAL.clearTimeout(id);
-      });
-      this[_timeouts] = null;
-      this[_intervals] && this[_intervals].forEach(function (id) {
-        GLOBAL.clearInterval(id);
-      });
-      this[_intervals] = null;
-      this[_immediates] && this[_immediates].forEach(function (id) {
-        GLOBAL.clearImmediate(id);
-      });
-      this[_immediates] = null;
-      this[_rafs] && this[_rafs].forEach(function (id) {
-        GLOBAL.cancelAnimationFrame(id);
-      });
-      this[_rafs] = null;
-    },
-    setTimeout: _setTimeout,
-    clearTimeout: _clearTimeout,
-    setInterval: _setInterval,
-    clearInterval: _clearInterval,
-    setImmediate: _setImmediate,
-    clearImmediate: _clearImmediate,
-    requestAnimationFrame: _requestAnimationFrame,
-    cancelAnimationFrame: _cancelAnimationFrame
-  };
-  module.exports = TimerMixin;
-},219,[]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  var invariant = _require(_dependencyMap[0]);
-
-  var ensurePositiveDelayProps = function ensurePositiveDelayProps(props) {
-    invariant(!(props.delayPressIn < 0 || props.delayPressOut < 0 || props.delayLongPress < 0), 'Touchable components cannot have negative delay properties');
-  };
-
-  module.exports = ensurePositiveDelayProps;
-},221,[15]);
+  module.exports = DummyTouchableNativeFeedback;
+},175,[103,111,166,133]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -19613,7 +19274,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   };
   babelHelpers.extends(Animated, AnimatedImplementation);
   module.exports = Animated;
-},177,[178,962,207,166,133]);
+},177,[178,205,207,166,133]);
 __d(function (global, _require2, module, exports, _dependencyMap) {
   'use strict';
 
@@ -23467,126 +23128,112 @@ __d(function (global, _require2, module, exports, _dependencyMap) {
 
   module.exports = createAnimatedComponent;
 },204,[179,192,103,127,15]);
-__d(function (global, _require2, module, exports, _dependencyMap) {
+__d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
-  var ImageResizeMode = _require2(_dependencyMap[0]);
+  var EdgeInsetsPropType = _require(_dependencyMap[0]);
 
-  var ImageStylePropTypes = _require2(_dependencyMap[1]);
+  var ImageResizeMode = _require(_dependencyMap[1]);
 
-  var NativeMethodsMixin = _require2(_dependencyMap[2]);
+  var ImageSourcePropType = _require(_dependencyMap[2]);
 
-  var NativeModules = _require2(_dependencyMap[3]);
+  var ImageStylePropTypes = _require(_dependencyMap[3]);
 
-  var React = _require2(_dependencyMap[4]);
+  var NativeMethodsMixin = _require(_dependencyMap[4]);
 
-  var PropTypes = _require2(_dependencyMap[5]);
+  var NativeModules = _require(_dependencyMap[5]);
 
-  var ReactNativeViewAttributes = _require2(_dependencyMap[6]);
+  var React = _require(_dependencyMap[6]);
 
-  var StyleSheet = _require2(_dependencyMap[7]);
+  var PropTypes = _require(_dependencyMap[7]);
 
-  var StyleSheetPropType = _require2(_dependencyMap[8]);
+  var ReactNativeViewAttributes = _require(_dependencyMap[8]);
 
-  var ViewPropTypes = _require2(_dependencyMap[9]);
+  var StyleSheet = _require(_dependencyMap[9]);
 
-  var createReactClass = _require2(_dependencyMap[10]);
+  var StyleSheetPropType = _require(_dependencyMap[10]);
 
-  var flattenStyle = _require2(_dependencyMap[11]);
+  var createReactClass = _require(_dependencyMap[11]);
 
-  var merge = _require2(_dependencyMap[12]);
+  var flattenStyle = _require(_dependencyMap[12]);
 
-  var requireNativeComponent = _require2(_dependencyMap[13]);
+  var requireNativeComponent = _require(_dependencyMap[13]);
 
-  var resolveAssetSource = _require2(_dependencyMap[14]);
+  var resolveAssetSource = _require(_dependencyMap[14]);
 
-  var _require = _require2(_dependencyMap[15]),
-      ViewContextTypes = _require.ViewContextTypes;
-
-  var ImageLoader = NativeModules.ImageLoader;
-  var _requestId = 1;
-
-  function generateRequestId() {
-    return _requestId++;
-  }
-
+  var ImageViewManager = NativeModules.ImageViewManager;
   var Image = createReactClass({
     displayName: 'Image',
-    propTypes: babelHelpers.extends({}, ViewPropTypes, {
+    propTypes: {
       style: StyleSheetPropType(ImageStylePropTypes),
-      source: PropTypes.oneOfType([PropTypes.shape({
-        uri: PropTypes.string,
-        headers: PropTypes.objectOf(PropTypes.string)
-      }), PropTypes.number, PropTypes.arrayOf(PropTypes.shape({
+      source: ImageSourcePropType,
+      defaultSource: PropTypes.oneOfType([PropTypes.shape({
         uri: PropTypes.string,
         width: PropTypes.number,
         height: PropTypes.number,
-        headers: PropTypes.objectOf(PropTypes.string)
-      }))]),
-      blurRadius: PropTypes.number,
-      loadingIndicatorSource: PropTypes.oneOfType([PropTypes.shape({
-        uri: PropTypes.string
+        scale: PropTypes.number
       }), PropTypes.number]),
-      progressiveRenderingEnabled: PropTypes.bool,
-      fadeDuration: PropTypes.number,
-      onLoadStart: PropTypes.func,
-      onError: PropTypes.func,
-      onLoad: PropTypes.func,
-      onLoadEnd: PropTypes.func,
-      testID: PropTypes.string,
+      accessible: PropTypes.bool,
+      accessibilityLabel: PropTypes.node,
+      blurRadius: PropTypes.number,
+      capInsets: EdgeInsetsPropType,
       resizeMethod: PropTypes.oneOf(['auto', 'resize', 'scale']),
-      resizeMode: PropTypes.oneOf(['cover', 'contain', 'stretch', 'center'])
-    }),
+      resizeMode: PropTypes.oneOf(['cover', 'contain', 'stretch', 'repeat', 'center']),
+      testID: PropTypes.string,
+      onLayout: PropTypes.func,
+      onLoadStart: PropTypes.func,
+      onProgress: PropTypes.func,
+      onError: PropTypes.func,
+      onPartialLoad: PropTypes.func,
+      onLoad: PropTypes.func,
+      onLoadEnd: PropTypes.func
+    },
     statics: {
       resizeMode: ImageResizeMode,
-      getSize: function getSize(url, success, failure) {
-        return ImageLoader.getSize(url).then(function (sizes) {
-          success(sizes.width, sizes.height);
-        }).catch(failure || function () {
-          console.warn('Failed to get size for image: ' + url);
+      getSize: function getSize(uri, success, failure) {
+        ImageViewManager.getSize(uri, success, failure || function () {
+          console.warn('Failed to get size for image: ' + uri);
         });
       },
-      prefetch: function prefetch(url, callback) {
-        var requestId = generateRequestId();
-        callback && callback(requestId);
-        return ImageLoader.prefetchImage(url, requestId);
-      },
-      abortPrefetch: function abortPrefetch(requestId) {
-        ImageLoader.abortRequest(requestId);
-      },
-      queryCache: function queryCache(urls) {
-        return regeneratorRuntime.async(function queryCache$(_context) {
-          while (1) {
-            switch (_context.prev = _context.next) {
-              case 0:
-                _context.next = 2;
-                return regeneratorRuntime.awrap(ImageLoader.queryCache(urls));
-
-              case 2:
-                return _context.abrupt("return", _context.sent);
-
-              case 3:
-              case "end":
-                return _context.stop();
-            }
-          }
-        }, null, this);
+      prefetch: function prefetch(url) {
+        return ImageViewManager.prefetchImage(url);
       },
       resolveAssetSource: resolveAssetSource
     },
     mixins: [NativeMethodsMixin],
     viewConfig: {
-      uiViewClassName: 'RCTView',
-      validAttributes: ReactNativeViewAttributes.RCTView
+      uiViewClassName: 'UIView',
+      validAttributes: ReactNativeViewAttributes.UIView
     },
-    contextTypes: ViewContextTypes,
     render: function render() {
-      var source = resolveAssetSource(this.props.source);
-      var loadingIndicatorSource = resolveAssetSource(this.props.loadingIndicatorSource);
+      var source = resolveAssetSource(this.props.source) || {
+        uri: undefined,
+        width: undefined,
+        height: undefined
+      };
+      var sources = void 0;
+      var style = void 0;
 
-      if (source && source.uri === '') {
-        console.warn('source.uri should not be an empty string');
+      if (Array.isArray(source)) {
+        style = flattenStyle([styles.base, this.props.style]) || {};
+        sources = source;
+      } else {
+        var _width = source.width,
+            _height = source.height,
+            uri = source.uri;
+        style = flattenStyle([{
+          width: _width,
+          height: _height
+        }, styles.base, this.props.style]) || {};
+        sources = [source];
+
+        if (uri === '') {
+          console.warn('source.uri should not be an empty string');
+        }
       }
+
+      var resizeMode = this.props.resizeMode || (style || {}).resizeMode || 'cover';
+      var tintColor = (style || {}).tintColor;
 
       if (this.props.src) {
         console.warn('The <Image> component requires a `source` property rather than `src`.');
@@ -23596,46 +23243,12 @@ __d(function (global, _require2, module, exports, _dependencyMap) {
         throw new Error('The <Image> component cannot contain children. If you want to render content on top of the image, consider using the <ImageBackground> component or absolute positioning.');
       }
 
-      if (source && (source.uri || Array.isArray(source))) {
-        var style = void 0;
-        var sources = void 0;
-
-        if (source.uri) {
-          var _width = source.width,
-              _height = source.height;
-          style = flattenStyle([{
-            width: _width,
-            height: _height
-          }, styles.base, this.props.style]);
-          sources = [{
-            uri: source.uri
-          }];
-        } else {
-          style = flattenStyle([styles.base, this.props.style]);
-          sources = source;
-        }
-
-        var _props = this.props,
-            onLoadStart = _props.onLoadStart,
-            onLoad = _props.onLoad,
-            onLoadEnd = _props.onLoadEnd,
-            onError = _props.onError;
-        var nativeProps = merge(this.props, {
-          style: style,
-          shouldNotifyLoadEvents: !!(onLoadStart || onLoad || onLoadEnd || onError),
-          src: sources,
-          headers: source.headers,
-          loadingIndicatorSrc: loadingIndicatorSource ? loadingIndicatorSource.uri : null
-        });
-
-        if (this.context.isInAParentText) {
-          return React.createElement(RCTTextInlineImage, nativeProps);
-        } else {
-          return React.createElement(RKImage, nativeProps);
-        }
-      }
-
-      return null;
+      return React.createElement(RCTImageView, babelHelpers.extends({}, this.props, {
+        style: style,
+        resizeMode: resizeMode,
+        tintColor: tintColor,
+        source: sources
+      }));
     }
   });
   var styles = StyleSheet.create({
@@ -23643,18 +23256,28 @@ __d(function (global, _require2, module, exports, _dependencyMap) {
       overflow: 'hidden'
     }
   });
-  var cfg = {
-    nativeOnly: {
-      src: true,
-      headers: true,
-      loadingIndicatorSrc: true,
-      shouldNotifyLoadEvents: true
-    }
-  };
-  var RKImage = requireNativeComponent('RCTImageView', Image, cfg);
-  var RCTTextInlineImage = requireNativeComponent('RCTTextInlineImage', Image, cfg);
+  var RCTImageView = requireNativeComponent('RCTImageView', Image);
   module.exports = Image;
-},962,[117,116,45,17,103,120,134,111,143,135,157,101,138,146,152,145]);
+},205,[136,117,206,116,45,17,103,120,134,111,143,157,101,146,152]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var PropTypes = _require(_dependencyMap[0]);
+
+  var ImageURISourcePropType = PropTypes.shape({
+    uri: PropTypes.string,
+    bundle: PropTypes.string,
+    method: PropTypes.string,
+    headers: PropTypes.objectOf(PropTypes.string),
+    body: PropTypes.string,
+    cache: PropTypes.oneOf(['default', 'reload', 'force-cache', 'only-if-cached']),
+    width: PropTypes.number,
+    height: PropTypes.number,
+    scale: PropTypes.number
+  });
+  var ImageSourcePropType = PropTypes.oneOfType([ImageURISourcePropType, PropTypes.number, PropTypes.arrayOf(ImageURISourcePropType)]);
+  module.exports = ImageSourcePropType;
+},206,[120]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -23887,11 +23510,6 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       }
     },
     _handleScroll: function _handleScroll(e) {
-      {
-        if (this.props.keyboardDismissMode === 'on-drag') {
-          dismissKeyboard();
-        }
-      }
       this.scrollResponderHandleScroll(e);
     },
     _handleLayout: function _handleLayout(e) {
@@ -23925,13 +23543,9 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       var ScrollViewClass = void 0;
       var ScrollContentContainerViewClass = void 0;
       {
-        if (this.props.horizontal) {
-          ScrollViewClass = AndroidHorizontalScrollView;
-          ScrollContentContainerViewClass = AndroidHorizontalScrollContentView;
-        } else {
-          ScrollViewClass = AndroidScrollView;
-          ScrollContentContainerViewClass = View;
-        }
+        ScrollViewClass = RCTScrollView;
+        ScrollContentContainerViewClass = RCTScrollContentView;
+        warning(!this.props.snapToInterval || !this.props.pagingEnabled, 'snapToInterval is currently ignored when pagingEnabled is true.');
       }
       invariant(ScrollViewClass !== undefined, 'ScrollViewClass must not be undefined');
       invariant(ScrollContentContainerViewClass !== undefined, 'ScrollContentContainerViewClass must not be undefined');
@@ -23981,7 +23595,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
         babelHelpers.extends({}, contentSizeChangeProps, {
           ref: this._setInnerViewRef,
           style: contentContainerStyle,
-          removeClippedSubviews: hasStickyHeaders ? false : this.props.removeClippedSubviews,
+          removeClippedSubviews: this.props.removeClippedSubviews,
           collapsable: false
         }),
         children
@@ -24028,16 +23642,14 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
       if (refreshControl) {
         {
-          return React.cloneElement(refreshControl, {
-            style: props.style
-          }, React.createElement(
+          return React.createElement(
             ScrollViewClass,
             babelHelpers.extends({}, props, {
-              style: baseStyle,
               ref: this._setScrollViewRef
             }),
+            Platform.isTVOS ? null : refreshControl,
             contentContainer
-          ));
+          );
         }
       }
 
@@ -24076,15 +23688,17 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   {
     nativeOnlyProps = {
       nativeOnly: {
-        sendMomentumEvents: true
+        onMomentumScrollBegin: true,
+        onMomentumScrollEnd: true,
+        onScrollBeginDrag: true,
+        onScrollEndDrag: true
       }
     };
-    AndroidScrollView = requireNativeComponent('RCTScrollView', ScrollView, nativeOnlyProps);
-    AndroidHorizontalScrollView = requireNativeComponent('AndroidHorizontalScrollView', ScrollView, nativeOnlyProps);
-    AndroidHorizontalScrollContentView = requireNativeComponent('AndroidHorizontalScrollContentView');
+    RCTScrollView = requireNativeComponent('RCTScrollView', ScrollView, nativeOnlyProps);
+    RCTScrollContentView = requireNativeComponent('RCTScrollContentView', View);
   }
   module.exports = ScrollView;
-},207,[178,43,136,958,208,120,103,46,209,217,111,143,133,135,127,157,213,101,15,218,146,29,152]);
+},207,[178,43,136,25,208,120,103,46,209,217,111,143,133,135,127,157,213,101,15,218,146,29,152]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -24731,515 +24345,346 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
+  var GLOBAL = typeof window === 'undefined' ? global : window;
+
+  var setter = function setter(_setter, _clearer, array) {
+    return function (callback, delta) {
+      var id = _setter(function () {
+        _clearer.call(this, id);
+
+        callback.apply(this, arguments);
+      }.bind(this), delta);
+
+      if (!this[array]) {
+        this[array] = [id];
+      } else {
+        this[array].push(id);
+      }
+
+      return id;
+    };
+  };
+
+  var clearer = function clearer(_clearer, array) {
+    return function (id) {
+      if (this[array]) {
+        var index = this[array].indexOf(id);
+
+        if (index !== -1) {
+          this[array].splice(index, 1);
+        }
+      }
+
+      _clearer(id);
+    };
+  };
+
+  var _timeouts = 'TimerMixin_timeouts';
+
+  var _clearTimeout = clearer(GLOBAL.clearTimeout, _timeouts);
+
+  var _setTimeout = setter(GLOBAL.setTimeout, _clearTimeout, _timeouts);
+
+  var _intervals = 'TimerMixin_intervals';
+
+  var _clearInterval = clearer(GLOBAL.clearInterval, _intervals);
+
+  var _setInterval = setter(GLOBAL.setInterval, function () {}, _intervals);
+
+  var _immediates = 'TimerMixin_immediates';
+
+  var _clearImmediate = clearer(GLOBAL.clearImmediate, _immediates);
+
+  var _setImmediate = setter(GLOBAL.setImmediate, _clearImmediate, _immediates);
+
+  var _rafs = 'TimerMixin_rafs';
+
+  var _cancelAnimationFrame = clearer(GLOBAL.cancelAnimationFrame, _rafs);
+
+  var _requestAnimationFrame = setter(GLOBAL.requestAnimationFrame, _cancelAnimationFrame, _rafs);
+
+  var TimerMixin = {
+    componentWillUnmount: function componentWillUnmount() {
+      this[_timeouts] && this[_timeouts].forEach(function (id) {
+        GLOBAL.clearTimeout(id);
+      });
+      this[_timeouts] = null;
+      this[_intervals] && this[_intervals].forEach(function (id) {
+        GLOBAL.clearInterval(id);
+      });
+      this[_intervals] = null;
+      this[_immediates] && this[_immediates].forEach(function (id) {
+        GLOBAL.clearImmediate(id);
+      });
+      this[_immediates] = null;
+      this[_rafs] && this[_rafs].forEach(function (id) {
+        GLOBAL.cancelAnimationFrame(id);
+      });
+      this[_rafs] = null;
+    },
+    setTimeout: _setTimeout,
+    clearTimeout: _clearTimeout,
+    setInterval: _setInterval,
+    clearInterval: _clearInterval,
+    setImmediate: _setImmediate,
+    clearImmediate: _clearImmediate,
+    requestAnimationFrame: _requestAnimationFrame,
+    cancelAnimationFrame: _cancelAnimationFrame
+  };
+  module.exports = TimerMixin;
+},219,[]);
+__d(function (global, _require2, module, exports, _dependencyMap) {
+  'use strict';
+
+  var EdgeInsetsPropType = _require2(_dependencyMap[0]);
+
+  var React = _require2(_dependencyMap[1]);
+
+  var PropTypes = _require2(_dependencyMap[2]);
+
+  var TimerMixin = _require2(_dependencyMap[3]);
+
+  var Touchable = _require2(_dependencyMap[4]);
+
+  var createReactClass = _require2(_dependencyMap[5]);
+
+  var ensurePositiveDelayProps = _require2(_dependencyMap[6]);
+
+  var warning = _require2(_dependencyMap[7]);
+
+  var _require = _require2(_dependencyMap[8]),
+      AccessibilityComponentTypes = _require.AccessibilityComponentTypes,
+      AccessibilityTraits = _require.AccessibilityTraits;
+
+  var PRESS_RETENTION_OFFSET = {
+    top: 20,
+    left: 20,
+    right: 20,
+    bottom: 30
+  };
+  var TouchableWithoutFeedback = createReactClass({
+    displayName: 'TouchableWithoutFeedback',
+    mixins: [TimerMixin, Touchable.Mixin],
+    propTypes: {
+      accessible: PropTypes.bool,
+      accessibilityComponentType: PropTypes.oneOf(AccessibilityComponentTypes),
+      accessibilityTraits: PropTypes.oneOfType([PropTypes.oneOf(AccessibilityTraits), PropTypes.arrayOf(PropTypes.oneOf(AccessibilityTraits))]),
+      disabled: PropTypes.bool,
+      onPress: PropTypes.func,
+      onPressIn: PropTypes.func,
+      onPressOut: PropTypes.func,
+      onLayout: PropTypes.func,
+      onLongPress: PropTypes.func,
+      delayPressIn: PropTypes.number,
+      delayPressOut: PropTypes.number,
+      delayLongPress: PropTypes.number,
+      pressRetentionOffset: EdgeInsetsPropType,
+      hitSlop: EdgeInsetsPropType
+    },
+    getInitialState: function getInitialState() {
+      return this.touchableGetInitialState();
+    },
+    componentDidMount: function componentDidMount() {
+      ensurePositiveDelayProps(this.props);
+    },
+    UNSAFE_componentWillReceiveProps: function UNSAFE_componentWillReceiveProps(nextProps) {
+      ensurePositiveDelayProps(nextProps);
+    },
+    touchableHandlePress: function touchableHandlePress(e) {
+      this.props.onPress && this.props.onPress(e);
+    },
+    touchableHandleActivePressIn: function touchableHandleActivePressIn(e) {
+      this.props.onPressIn && this.props.onPressIn(e);
+    },
+    touchableHandleActivePressOut: function touchableHandleActivePressOut(e) {
+      this.props.onPressOut && this.props.onPressOut(e);
+    },
+    touchableHandleLongPress: function touchableHandleLongPress(e) {
+      this.props.onLongPress && this.props.onLongPress(e);
+    },
+    touchableGetPressRectOffset: function touchableGetPressRectOffset() {
+      return this.props.pressRetentionOffset || PRESS_RETENTION_OFFSET;
+    },
+    touchableGetHitSlop: function touchableGetHitSlop() {
+      return this.props.hitSlop;
+    },
+    touchableGetHighlightDelayMS: function touchableGetHighlightDelayMS() {
+      return this.props.delayPressIn || 0;
+    },
+    touchableGetLongPressDelayMS: function touchableGetLongPressDelayMS() {
+      return this.props.delayLongPress === 0 ? 0 : this.props.delayLongPress || 500;
+    },
+    touchableGetPressOutDelayMS: function touchableGetPressOutDelayMS() {
+      return this.props.delayPressOut || 0;
+    },
+    render: function render() {
+      var child = React.Children.only(this.props.children);
+      var children = child.props.children;
+      warning(!child.type || child.type.displayName !== 'Text', 'TouchableWithoutFeedback does not work well with Text children. Wrap children in a View instead. See ' + (child._owner && child._owner.getName && child._owner.getName() || '<unknown>'));
+
+      if (Touchable.TOUCH_TARGET_DEBUG && child.type && child.type.displayName === 'View') {
+        children = React.Children.toArray(children);
+        children.push(Touchable.renderDebugView({
+          color: 'red',
+          hitSlop: this.props.hitSlop
+        }));
+      }
+
+      var style = Touchable.TOUCH_TARGET_DEBUG && child.type && child.type.displayName === 'Text' ? [child.props.style, {
+        color: 'red'
+      }] : child.props.style;
+      return React.cloneElement(child, {
+        accessible: this.props.accessible !== false,
+        accessibilityLabel: this.props.accessibilityLabel,
+        accessibilityComponentType: this.props.accessibilityComponentType,
+        accessibilityTraits: this.props.accessibilityTraits,
+        nativeID: this.props.nativeID,
+        testID: this.props.testID,
+        onLayout: this.props.onLayout,
+        hitSlop: this.props.hitSlop,
+        onStartShouldSetResponder: this.touchableHandleStartShouldSetResponder,
+        onResponderTerminationRequest: this.touchableHandleResponderTerminationRequest,
+        onResponderGrant: this.touchableHandleResponderGrant,
+        onResponderMove: this.touchableHandleResponderMove,
+        onResponderRelease: this.touchableHandleResponderRelease,
+        onResponderTerminate: this.touchableHandleResponderTerminate,
+        style: style,
+        children: children
+      });
+    }
+  });
+  module.exports = TouchableWithoutFeedback;
+},220,[136,103,120,219,168,157,221,29,144]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var invariant = _require(_dependencyMap[0]);
+
+  var ensurePositiveDelayProps = function ensurePositiveDelayProps(props) {
+    invariant(!(props.delayPressIn < 0 || props.delayPressOut < 0 || props.delayLongPress < 0), 'Touchable components cannot have negative delay properties');
+  };
+
+  module.exports = ensurePositiveDelayProps;
+},221,[15]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  module.exports = _require(_dependencyMap[0]);
+},222,[110]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
   var NativeMethodsMixin = _require(_dependencyMap[0]);
 
-  var PropTypes = _require(_dependencyMap[1]);
+  var React = _require(_dependencyMap[1]);
 
-  var React = _require(_dependencyMap[2]);
+  var invariant = _require(_dependencyMap[2]);
 
-  var StyleSheet = _require(_dependencyMap[3]);
+  var PropTypes = _require(_dependencyMap[3]);
 
-  var ViewPropTypes = _require(_dependencyMap[4]);
+  var StyleSheet = _require(_dependencyMap[4]);
 
-  var createReactClass = _require(_dependencyMap[5]);
+  var View = _require(_dependencyMap[5]);
 
-  var requireNativeComponent = _require(_dependencyMap[6]);
+  var ViewPropTypes = _require(_dependencyMap[6]);
 
-  var CheckBox = createReactClass({
-    displayName: 'CheckBox',
+  var createReactClass = _require(_dependencyMap[7]);
+
+  var requireNativeComponent = _require(_dependencyMap[8]);
+
+  var DatePickerIOS = createReactClass({
+    displayName: 'DatePickerIOS',
+    _picker: undefined,
+    mixins: [NativeMethodsMixin],
     propTypes: babelHelpers.extends({}, ViewPropTypes, {
-      value: PropTypes.bool,
-      disabled: PropTypes.bool,
-      onChange: PropTypes.func,
-      onValueChange: PropTypes.func,
-      testID: PropTypes.string
+      date: PropTypes.instanceOf(Date),
+      initialDate: PropTypes.instanceOf(Date),
+      onDateChange: PropTypes.func.isRequired,
+      maximumDate: PropTypes.instanceOf(Date),
+      minimumDate: PropTypes.instanceOf(Date),
+      mode: PropTypes.oneOf(['date', 'time', 'datetime']),
+      locale: PropTypes.string,
+      minuteInterval: PropTypes.oneOf([1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30]),
+      timeZoneOffsetInMinutes: PropTypes.number
     }),
     getDefaultProps: function getDefaultProps() {
       return {
-        value: false,
-        disabled: false
+        mode: 'datetime'
       };
     },
-    mixins: [NativeMethodsMixin],
-    _rctCheckBox: {},
-    _onChange: function _onChange(event) {
-      this._rctCheckBox.setNativeProps({
-        value: this.props.value
-      });
+    componentDidUpdate: function componentDidUpdate() {
+      if (this.props.date) {
+        var propsTimeStamp = this.props.date.getTime();
 
+        if (this._picker) {
+          this._picker.setNativeProps({
+            date: propsTimeStamp
+          });
+        }
+      }
+    },
+    _onChange: function _onChange(event) {
+      var nativeTimeStamp = event.nativeEvent.timestamp;
+      this.props.onDateChange && this.props.onDateChange(new Date(nativeTimeStamp));
       this.props.onChange && this.props.onChange(event);
-      this.props.onValueChange && this.props.onValueChange(event.nativeEvent.value);
     },
     render: function render() {
       var _this = this;
 
-      var props = babelHelpers.extends({}, this.props);
-
-      props.onStartShouldSetResponder = function () {
-        return true;
-      };
-
-      props.onResponderTerminationRequest = function () {
-        return false;
-      };
-
-      props.enabled = !this.props.disabled;
-      props.on = this.props.value;
-      props.style = [styles.rctCheckBox, this.props.style];
-      return React.createElement(RCTCheckBox, babelHelpers.extends({}, props, {
-        ref: function ref(_ref) {
-          _this._rctCheckBox = _ref;
-        },
-        onChange: this._onChange
-      }));
-    }
-  });
-  var styles = StyleSheet.create({
-    rctCheckBox: {
-      height: 32,
-      width: 32
-    }
-  });
-  var RCTCheckBox = requireNativeComponent('AndroidCheckBox', CheckBox, {
-    nativeOnly: {
-      onChange: true,
-      on: true,
-      enabled: true
-    }
-  });
-  module.exports = CheckBox;
-},963,[45,120,103,111,135,157,146]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  var React = _require(_dependencyMap[0]);
-
-  var StyleSheet = _require(_dependencyMap[1]);
-
-  var Text = _require(_dependencyMap[2]);
-
-  var View = _require(_dependencyMap[3]);
-
-  var DummyDatePickerIOS = function (_React$Component) {
-    babelHelpers.inherits(DummyDatePickerIOS, _React$Component);
-
-    function DummyDatePickerIOS() {
-      babelHelpers.classCallCheck(this, DummyDatePickerIOS);
-      return babelHelpers.possibleConstructorReturn(this, (DummyDatePickerIOS.__proto__ || Object.getPrototypeOf(DummyDatePickerIOS)).apply(this, arguments));
-    }
-
-    babelHelpers.createClass(DummyDatePickerIOS, [{
-      key: "render",
-      value: function render() {
-        return React.createElement(
-          View,
-          {
-            style: [styles.dummyDatePickerIOS, this.props.style]
-          },
-          React.createElement(
-            Text,
-            {
-              style: styles.datePickerText
-            },
-            "DatePickerIOS is not supported on this platform!"
-          )
-        );
-      }
-    }]);
-    return DummyDatePickerIOS;
-  }(React.Component);
-
-  var styles = StyleSheet.create({
-    dummyDatePickerIOS: {
-      height: 100,
-      width: 300,
-      backgroundColor: '#ffbcbc',
-      borderWidth: 1,
-      borderColor: 'red',
-      alignItems: 'center',
-      justifyContent: 'center',
-      margin: 10
-    },
-    datePickerText: {
-      color: '#333333',
-      margin: 20
-    }
-  });
-  module.exports = DummyDatePickerIOS;
-},964,[103,111,166,133]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  var ColorPropType = _require(_dependencyMap[0]);
-
-  var NativeMethodsMixin = _require(_dependencyMap[1]);
-
-  var Platform = _require(_dependencyMap[2]);
-
-  var React = _require(_dependencyMap[3]);
-
-  var PropTypes = _require(_dependencyMap[4]);
-
-  var ReactNative = _require(_dependencyMap[5]);
-
-  var StatusBar = _require(_dependencyMap[6]);
-
-  var StyleSheet = _require(_dependencyMap[7]);
-
-  var UIManager = _require(_dependencyMap[8]);
-
-  var View = _require(_dependencyMap[9]);
-
-  var ViewPropTypes = _require(_dependencyMap[10]);
-
-  var DrawerConsts = UIManager.AndroidDrawerLayout.Constants;
-
-  var createReactClass = _require(_dependencyMap[11]);
-
-  var dismissKeyboard = _require(_dependencyMap[12]);
-
-  var requireNativeComponent = _require(_dependencyMap[13]);
-
-  var RK_DRAWER_REF = 'drawerlayout';
-  var INNERVIEW_REF = 'innerView';
-  var DRAWER_STATES = ['Idle', 'Dragging', 'Settling'];
-  var DrawerLayoutAndroid = createReactClass({
-    displayName: 'DrawerLayoutAndroid',
-    statics: {
-      positions: DrawerConsts.DrawerPosition
-    },
-    propTypes: babelHelpers.extends({}, ViewPropTypes, {
-      keyboardDismissMode: PropTypes.oneOf(['none', 'on-drag']),
-      drawerBackgroundColor: ColorPropType,
-      drawerPosition: PropTypes.oneOf([DrawerConsts.DrawerPosition.Left, DrawerConsts.DrawerPosition.Right]),
-      drawerWidth: PropTypes.number,
-      drawerLockMode: PropTypes.oneOf(['unlocked', 'locked-closed', 'locked-open']),
-      onDrawerSlide: PropTypes.func,
-      onDrawerStateChanged: PropTypes.func,
-      onDrawerOpen: PropTypes.func,
-      onDrawerClose: PropTypes.func,
-      renderNavigationView: PropTypes.func.isRequired,
-      statusBarBackgroundColor: ColorPropType
-    }),
-    mixins: [NativeMethodsMixin],
-    getDefaultProps: function getDefaultProps() {
-      return {
-        drawerBackgroundColor: 'white'
-      };
-    },
-    getInitialState: function getInitialState() {
-      return {
-        statusBarBackgroundColor: undefined
-      };
-    },
-    getInnerViewNode: function getInnerViewNode() {
-      return this.refs[INNERVIEW_REF].getInnerViewNode();
-    },
-    render: function render() {
-      var drawStatusBar = Platform.Version >= 21 && this.props.statusBarBackgroundColor;
-      var drawerViewWrapper = React.createElement(
+      var props = this.props;
+      invariant(props.date || props.initialDate, 'A selected date or initial date should be specified.');
+      return React.createElement(
         View,
         {
-          style: [styles.drawerSubview, {
-            width: this.props.drawerWidth,
-            backgroundColor: this.props.drawerBackgroundColor
-          }],
-          collapsable: false
+          style: props.style
         },
-        this.props.renderNavigationView(),
-        drawStatusBar && React.createElement(View, {
-          style: styles.drawerStatusBar
+        React.createElement(RCTDatePickerIOS, {
+          ref: function ref(picker) {
+            _this._picker = picker;
+          },
+          style: styles.datePickerIOS,
+          date: props.date ? props.date.getTime() : props.initialDate ? props.initialDate.getTime() : undefined,
+          locale: props.locale ? props.locale : undefined,
+          maximumDate: props.maximumDate ? props.maximumDate.getTime() : undefined,
+          minimumDate: props.minimumDate ? props.minimumDate.getTime() : undefined,
+          mode: props.mode,
+          minuteInterval: props.minuteInterval,
+          timeZoneOffsetInMinutes: props.timeZoneOffsetInMinutes,
+          onChange: this._onChange,
+          onStartShouldSetResponder: function onStartShouldSetResponder() {
+            return true;
+          },
+          onResponderTerminationRequest: function onResponderTerminationRequest() {
+            return false;
+          }
         })
       );
-      var childrenWrapper = React.createElement(
-        View,
-        {
-          ref: INNERVIEW_REF,
-          style: styles.mainSubview,
-          collapsable: false
-        },
-        drawStatusBar && React.createElement(StatusBar, {
-          translucent: true,
-          backgroundColor: this.props.statusBarBackgroundColor
-        }),
-        drawStatusBar && React.createElement(View, {
-          style: [styles.statusBar, {
-            backgroundColor: this.props.statusBarBackgroundColor
-          }]
-        }),
-        this.props.children
-      );
-      return React.createElement(
-        AndroidDrawerLayout,
-        babelHelpers.extends({}, this.props, {
-          ref: RK_DRAWER_REF,
-          drawerWidth: this.props.drawerWidth,
-          drawerPosition: this.props.drawerPosition,
-          drawerLockMode: this.props.drawerLockMode,
-          style: [styles.base, this.props.style],
-          onDrawerSlide: this._onDrawerSlide,
-          onDrawerOpen: this._onDrawerOpen,
-          onDrawerClose: this._onDrawerClose,
-          onDrawerStateChanged: this._onDrawerStateChanged
-        }),
-        childrenWrapper,
-        drawerViewWrapper
-      );
-    },
-    _onDrawerSlide: function _onDrawerSlide(event) {
-      if (this.props.onDrawerSlide) {
-        this.props.onDrawerSlide(event);
-      }
-
-      if (this.props.keyboardDismissMode === 'on-drag') {
-        dismissKeyboard();
-      }
-    },
-    _onDrawerOpen: function _onDrawerOpen() {
-      if (this.props.onDrawerOpen) {
-        this.props.onDrawerOpen();
-      }
-    },
-    _onDrawerClose: function _onDrawerClose() {
-      if (this.props.onDrawerClose) {
-        this.props.onDrawerClose();
-      }
-    },
-    _onDrawerStateChanged: function _onDrawerStateChanged(event) {
-      if (this.props.onDrawerStateChanged) {
-        this.props.onDrawerStateChanged(DRAWER_STATES[event.nativeEvent.drawerState]);
-      }
-    },
-    openDrawer: function openDrawer() {
-      UIManager.dispatchViewManagerCommand(this._getDrawerLayoutHandle(), UIManager.AndroidDrawerLayout.Commands.openDrawer, null);
-    },
-    closeDrawer: function closeDrawer() {
-      UIManager.dispatchViewManagerCommand(this._getDrawerLayoutHandle(), UIManager.AndroidDrawerLayout.Commands.closeDrawer, null);
-    },
-    _getDrawerLayoutHandle: function _getDrawerLayoutHandle() {
-      return ReactNative.findNodeHandle(this.refs[RK_DRAWER_REF]);
     }
   });
   var styles = StyleSheet.create({
-    base: {
-      flex: 1,
-      elevation: 16
-    },
-    mainSubview: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0
-    },
-    drawerSubview: {
-      position: 'absolute',
-      top: 0,
-      bottom: 0
-    },
-    statusBar: {
-      height: StatusBar.currentHeight
-    },
-    drawerStatusBar: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      height: StatusBar.currentHeight,
-      backgroundColor: 'rgba(0, 0, 0, 0.251)'
+    datePickerIOS: {
+      height: 216
     }
   });
-  var AndroidDrawerLayout = requireNativeComponent('AndroidDrawerLayout', DrawerLayoutAndroid);
-  module.exports = DrawerLayoutAndroid;
-},965,[43,45,958,103,120,46,261,111,97,133,135,157,213,146]);
+  var RCTDatePickerIOS = requireNativeComponent('RCTDatePicker', {
+    propTypes: babelHelpers.extends({}, DatePickerIOS.propTypes, {
+      date: PropTypes.number,
+      locale: PropTypes.string,
+      minimumDate: PropTypes.number,
+      maximumDate: PropTypes.number,
+      onDateChange: function onDateChange() {
+        return null;
+      },
+      onChange: PropTypes.func
+    })
+  });
+  module.exports = DatePickerIOS;
+},223,[45,103,15,120,111,133,135,157,146]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
-  var _class, _temp2;
-
-  var React = _require(_dependencyMap[0]);
-
-  var PropTypes = _require(_dependencyMap[1]);
-
-  var ColorPropType = _require(_dependencyMap[2]);
-
-  var Platform = _require(_dependencyMap[3]);
-
-  var processColor = _require(_dependencyMap[4]);
-
-  var StatusBarManager = _require(_dependencyMap[5]).StatusBarManager;
-
-  function mergePropsStack(propsStack, defaultValues) {
-    return propsStack.reduce(function (prev, cur) {
-      for (var prop in cur) {
-        if (cur[prop] != null) {
-          prev[prop] = cur[prop];
-        }
-      }
-
-      return prev;
-    }, babelHelpers.extends({}, defaultValues));
-  }
-
-  function createStackEntry(props) {
-    return {
-      backgroundColor: props.backgroundColor != null ? {
-        value: props.backgroundColor,
-        animated: props.animated
-      } : null,
-      barStyle: props.barStyle != null ? {
-        value: props.barStyle,
-        animated: props.animated
-      } : null,
-      translucent: props.translucent,
-      hidden: props.hidden != null ? {
-        value: props.hidden,
-        animated: props.animated,
-        transition: props.showHideTransition
-      } : null,
-      networkActivityIndicatorVisible: props.networkActivityIndicatorVisible
-    };
-  }
-
-  var StatusBar = (_temp2 = _class = function (_React$Component) {
-    babelHelpers.inherits(StatusBar, _React$Component);
-
-    function StatusBar() {
-      var _ref;
-
-      var _temp, _this, _ret;
-
-      babelHelpers.classCallCheck(this, StatusBar);
-
-      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-        args[_key] = arguments[_key];
-      }
-
-      return _ret = (_temp = (_this = babelHelpers.possibleConstructorReturn(this, (_ref = StatusBar.__proto__ || Object.getPrototypeOf(StatusBar)).call.apply(_ref, [this].concat(args))), _this), _this._stackEntry = null, _this._updatePropsStack = function () {
-        clearImmediate(StatusBar._updateImmediate);
-        StatusBar._updateImmediate = setImmediate(function () {
-          var oldProps = StatusBar._currentValues;
-          var mergedProps = mergePropsStack(StatusBar._propsStack, StatusBar._defaultProps);
-          {
-            if (!oldProps || oldProps.barStyle.value !== mergedProps.barStyle.value) {
-              StatusBarManager.setStyle(mergedProps.barStyle.value);
-            }
-
-            if (!oldProps || oldProps.backgroundColor.value !== mergedProps.backgroundColor.value) {
-              StatusBarManager.setColor(processColor(mergedProps.backgroundColor.value), mergedProps.backgroundColor.animated);
-            }
-
-            if (!oldProps || oldProps.hidden.value !== mergedProps.hidden.value) {
-              StatusBarManager.setHidden(mergedProps.hidden.value);
-            }
-
-            if (!oldProps || oldProps.translucent !== mergedProps.translucent) {
-              StatusBarManager.setTranslucent(mergedProps.translucent);
-            }
-          }
-          StatusBar._currentValues = mergedProps;
-        });
-      }, _temp), babelHelpers.possibleConstructorReturn(_this, _ret);
-    }
-
-    babelHelpers.createClass(StatusBar, [{
-      key: "componentDidMount",
-      value: function componentDidMount() {
-        this._stackEntry = createStackEntry(this.props);
-
-        StatusBar._propsStack.push(this._stackEntry);
-
-        this._updatePropsStack();
-      }
-    }, {
-      key: "componentWillUnmount",
-      value: function componentWillUnmount() {
-        var index = StatusBar._propsStack.indexOf(this._stackEntry);
-
-        StatusBar._propsStack.splice(index, 1);
-
-        this._updatePropsStack();
-      }
-    }, {
-      key: "componentDidUpdate",
-      value: function componentDidUpdate() {
-        var index = StatusBar._propsStack.indexOf(this._stackEntry);
-
-        this._stackEntry = createStackEntry(this.props);
-        StatusBar._propsStack[index] = this._stackEntry;
-
-        this._updatePropsStack();
-      }
-    }, {
-      key: "render",
-      value: function render() {
-        return null;
-      }
-    }], [{
-      key: "setHidden",
-      value: function setHidden(hidden, animation) {
-        animation = animation || 'none';
-        StatusBar._defaultProps.hidden.value = hidden;
-        {
-          StatusBarManager.setHidden(hidden);
-        }
-      }
-    }, {
-      key: "setBarStyle",
-      value: function setBarStyle(style, animated) {
-        animated = animated || false;
-        StatusBar._defaultProps.barStyle.value = style;
-        {
-          StatusBarManager.setStyle(style);
-        }
-      }
-    }, {
-      key: "setNetworkActivityIndicatorVisible",
-      value: function setNetworkActivityIndicatorVisible(visible) {
-        {
-          console.warn('`setNetworkActivityIndicatorVisible` is only available on iOS');
-          return;
-        }
-        StatusBar._defaultProps.networkActivityIndicatorVisible = visible;
-        StatusBarManager.setNetworkActivityIndicatorVisible(visible);
-      }
-    }, {
-      key: "setBackgroundColor",
-      value: function setBackgroundColor(color, animated) {
-        animated = animated || false;
-        StatusBar._defaultProps.backgroundColor.value = color;
-        StatusBarManager.setColor(processColor(color), animated);
-      }
-    }, {
-      key: "setTranslucent",
-      value: function setTranslucent(translucent) {
-        StatusBar._defaultProps.translucent = translucent;
-        StatusBarManager.setTranslucent(translucent);
-      }
-    }]);
-    return StatusBar;
-  }(React.Component), _class._propsStack = [], _class._defaultProps = createStackEntry({
-    animated: false,
-    showHideTransition: 'fade',
-    backgroundColor: 'black',
-    barStyle: 'default',
-    translucent: false,
-    hidden: false,
-    networkActivityIndicatorVisible: false
-  }), _class._updateImmediate = null, _class._currentValues = null, _class.currentHeight = StatusBarManager.HEIGHT, _class.propTypes = {
-    hidden: PropTypes.bool,
-    animated: PropTypes.bool,
-    backgroundColor: ColorPropType,
-    translucent: PropTypes.bool,
-    barStyle: PropTypes.oneOf(['default', 'light-content', 'dark-content']),
-    networkActivityIndicatorVisible: PropTypes.bool,
-    showHideTransition: PropTypes.oneOf(['fade', 'slide'])
-  }, _class.defaultProps = {
-    animated: false,
-    showHideTransition: 'fade'
-  }, _temp2);
-  module.exports = StatusBar;
-},261,[103,120,43,958,128,17]);
+  module.exports = _require(_dependencyMap[0]);
+},224,[110]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -25842,7 +25287,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
         },
         scrollRenderAheadDistance: DEFAULT_SCROLL_RENDER_AHEAD,
         onEndReachedThreshold: DEFAULT_END_REACHED_THRESHOLD,
-        stickySectionHeadersEnabled: false,
+        stickySectionHeadersEnabled: true,
         stickyHeaderIndices: []
       };
     },
@@ -26207,7 +25652,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     }
   });
   module.exports = ListView;
-},227,[228,958,103,120,46,17,207,209,230,219,133,231,157,229,138,29,15]);
+},227,[228,25,103,120,46,17,207,209,230,219,133,231,157,229,138,29,15]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -26549,9 +25994,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   var requireNativeComponent = _require(_dependencyMap[7]);
 
   {
-    var AndroidSwipeRefreshLayout = _require(_dependencyMap[8]).AndroidSwipeRefreshLayout;
-
-    var RefreshLayoutConsts = AndroidSwipeRefreshLayout ? AndroidSwipeRefreshLayout.Constants : {
+    var RefreshLayoutConsts = {
       SIZE: {}
     };
   }
@@ -26606,10 +26049,10 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     }
   });
   {
-    var NativeRefreshControl = requireNativeComponent('AndroidSwipeRefreshLayout', RefreshControl);
+    var NativeRefreshControl = requireNativeComponent('RCTRefreshControl', RefreshControl);
   }
   module.exports = RefreshControl;
-},232,[43,45,958,103,120,135,157,146,97]);
+},232,[43,45,25,103,120,135,157,146]);
 __d(function (global, _require2, module, exports, _dependencyMap) {
   'use strict';
 
@@ -28724,7 +28167,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   }(React.Component);
 
   module.exports = ImageBackground;
-},238,[962,103,111,133,239]);
+},238,[205,103,111,133,239]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -28948,7 +28391,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     },
     UNSAFE_componentWillMount: function UNSAFE_componentWillMount() {
       {
-        this.subscriptions = [Keyboard.addListener('keyboardDidHide', this._onKeyboardChange), Keyboard.addListener('keyboardDidShow', this._onKeyboardChange)];
+        this.subscriptions = [Keyboard.addListener('keyboardWillChangeFrame', this._onKeyboardChange)];
       }
     },
     componentWillUnmount: function componentWillUnmount() {
@@ -29034,52 +28477,86 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     }
   });
   module.exports = KeyboardAvoidingView;
-},243,[157,211,212,958,120,103,219,133,135]);
+},243,[157,211,212,25,120,103,219,133,135]);
 __d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
+  var _class, _temp2;
 
-  module.exports = _require(_dependencyMap[0]);
-},966,[110]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
+  var PropTypes = _require(_dependencyMap[0]);
 
-  var React = _require(_dependencyMap[0]);
+  var React = _require(_dependencyMap[1]);
 
-  var StyleSheet = _require(_dependencyMap[1]);
+  var StyleSheet = _require(_dependencyMap[2]);
 
-  var UnimplementedView = function (_React$Component) {
-    babelHelpers.inherits(UnimplementedView, _React$Component);
+  var View = _require(_dependencyMap[3]);
 
-    function UnimplementedView() {
-      babelHelpers.classCallCheck(this, UnimplementedView);
-      return babelHelpers.possibleConstructorReturn(this, (UnimplementedView.__proto__ || Object.getPrototypeOf(UnimplementedView)).apply(this, arguments));
+  var ViewPropTypes = _require(_dependencyMap[4]);
+
+  var requireNativeComponent = _require(_dependencyMap[5]);
+
+  var MaskedViewIOS = (_temp2 = _class = function (_React$Component) {
+    babelHelpers.inherits(MaskedViewIOS, _React$Component);
+
+    function MaskedViewIOS() {
+      var _ref;
+
+      var _temp, _this, _ret;
+
+      babelHelpers.classCallCheck(this, MaskedViewIOS);
+
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      return _ret = (_temp = (_this = babelHelpers.possibleConstructorReturn(this, (_ref = MaskedViewIOS.__proto__ || Object.getPrototypeOf(MaskedViewIOS)).call.apply(_ref, [this].concat(args))), _this), _this._hasWarnedInvalidRenderMask = false, _temp), babelHelpers.possibleConstructorReturn(_this, _ret);
     }
 
-    babelHelpers.createClass(UnimplementedView, [{
-      key: "setNativeProps",
-      value: function setNativeProps() {}
-    }, {
+    babelHelpers.createClass(MaskedViewIOS, [{
       key: "render",
       value: function render() {
-        var View = _require(_dependencyMap[2]);
+        var _props = this.props,
+            maskElement = _props.maskElement,
+            children = _props.children,
+            otherViewProps = babelHelpers.objectWithoutProperties(_props, ["maskElement", "children"]);
+
+        if (!React.isValidElement(maskElement)) {
+          if (!this._hasWarnedInvalidRenderMask) {
+            console.warn("MaskedView: Invalid `maskElement` prop was passed to MaskedView. Expected a React Element. No mask will render.");
+            this._hasWarnedInvalidRenderMask = true;
+          }
+
+          return React.createElement(
+            View,
+            otherViewProps,
+            children
+          );
+        }
 
         return React.createElement(
-          View,
-          {
-            style: [styles.unimplementedView, this.props.style]
-          },
-          this.props.children
+          RCTMaskedView,
+          otherViewProps,
+          React.createElement(
+            View,
+            {
+              pointerEvents: "none",
+              style: StyleSheet.absoluteFill
+            },
+            maskElement
+          ),
+          children
         );
       }
     }]);
-    return UnimplementedView;
-  }(React.Component);
-
-  var styles = StyleSheet.create({
-    unimplementedView: {}
+    return MaskedViewIOS;
+  }(React.Component), _class.propTypes = babelHelpers.extends({}, ViewPropTypes, {
+    maskElement: PropTypes.element.isRequired
+  }), _temp2);
+  var RCTMaskedView = requireNativeComponent('RCTMaskedView', {
+    name: 'RCTMaskedView',
+    displayName: 'RCTMaskedView',
+    propTypes: babelHelpers.extends({}, ViewPropTypes)
   });
-  module.exports = UnimplementedView;
-},110,[103,111,133]);
+  module.exports = MaskedViewIOS;
+},244,[120,103,111,133,135,146]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -29108,7 +28585,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   var requireNativeComponent = _require(_dependencyMap[10]);
 
   var RCTModalHostView = requireNativeComponent('RCTModalHostView', null);
-  var ModalEventEmitter = null;
+  var ModalEventEmitter = NativeModules.ModalManager ? new NativeEventEmitter(NativeModules.ModalManager) : null;
   var uniqueModalIdentifier = 0;
   var Modal = (_temp = _class = function (_React$Component) {
     babelHelpers.inherits(Modal, _React$Component);
@@ -29224,7 +28701,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     transparent: PropTypes.bool,
     hardwareAccelerated: PropTypes.bool,
     visible: PropTypes.bool,
-    onRequestClose: Platform.isTVOS || true ? PropTypes.func.isRequired : PropTypes.func,
+    onRequestClose: Platform.isTVOS || false ? PropTypes.func.isRequired : PropTypes.func,
     onShow: PropTypes.func,
     onDismiss: PropTypes.func,
     animated: deprecatedPropType(PropTypes.bool, 'Use the `animationType` prop instead.'),
@@ -29246,7 +28723,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     }, babelHelpers.defineProperty(_container, side, 0), babelHelpers.defineProperty(_container, "top", 0), _container)
   });
   module.exports = Modal;
-},245,[246,247,70,17,958,103,120,111,133,125,146]);
+},245,[246,247,70,17,25,103,120,111,133,125,146]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -29372,8 +28849,478 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
-  module.exports = _require(_dependencyMap[0]);
-},967,[110]);
+  var EventEmitter = _require(_dependencyMap[0]);
+
+  var Image = _require(_dependencyMap[1]);
+
+  var RCTNavigatorManager = _require(_dependencyMap[2]).NavigatorManager;
+
+  var React = _require(_dependencyMap[3]);
+
+  var PropTypes = _require(_dependencyMap[4]);
+
+  var ReactNative = _require(_dependencyMap[5]);
+
+  var StaticContainer = _require(_dependencyMap[6]);
+
+  var StyleSheet = _require(_dependencyMap[7]);
+
+  var TVEventHandler = _require(_dependencyMap[8]);
+
+  var View = _require(_dependencyMap[9]);
+
+  var ViewPropTypes = _require(_dependencyMap[10]);
+
+  var createReactClass = _require(_dependencyMap[11]);
+
+  var invariant = _require(_dependencyMap[12]);
+
+  var requireNativeComponent = _require(_dependencyMap[13]);
+
+  var keyMirror = _require(_dependencyMap[14]);
+
+  var TRANSITIONER_REF = 'transitionerRef';
+  var __uid = 0;
+
+  function getuid() {
+    return __uid++;
+  }
+
+  var NavigatorTransitionerIOS = function (_React$Component) {
+    babelHelpers.inherits(NavigatorTransitionerIOS, _React$Component);
+
+    function NavigatorTransitionerIOS() {
+      babelHelpers.classCallCheck(this, NavigatorTransitionerIOS);
+      return babelHelpers.possibleConstructorReturn(this, (NavigatorTransitionerIOS.__proto__ || Object.getPrototypeOf(NavigatorTransitionerIOS)).apply(this, arguments));
+    }
+
+    babelHelpers.createClass(NavigatorTransitionerIOS, [{
+      key: "requestSchedulingNavigation",
+      value: function requestSchedulingNavigation(cb) {
+        RCTNavigatorManager.requestSchedulingJavaScriptNavigation(ReactNative.findNodeHandle(this), cb);
+      }
+    }, {
+      key: "render",
+      value: function render() {
+        return React.createElement(RCTNavigator, this.props);
+      }
+    }]);
+    return NavigatorTransitionerIOS;
+  }(React.Component);
+
+  var SystemIconLabels = {
+    done: true,
+    cancel: true,
+    edit: true,
+    save: true,
+    add: true,
+    compose: true,
+    reply: true,
+    action: true,
+    organize: true,
+    bookmarks: true,
+    search: true,
+    refresh: true,
+    stop: true,
+    camera: true,
+    trash: true,
+    play: true,
+    pause: true,
+    rewind: true,
+    'fast-forward': true,
+    undo: true,
+    redo: true,
+    'page-curl': true
+  };
+  var SystemIcons = keyMirror(SystemIconLabels);
+  var NavigatorIOS = createReactClass({
+    displayName: 'NavigatorIOS',
+    propTypes: {
+      initialRoute: PropTypes.shape({
+        component: PropTypes.func.isRequired,
+        title: PropTypes.string.isRequired,
+        titleImage: Image.propTypes.source,
+        passProps: PropTypes.object,
+        backButtonIcon: Image.propTypes.source,
+        backButtonTitle: PropTypes.string,
+        leftButtonIcon: Image.propTypes.source,
+        leftButtonTitle: PropTypes.string,
+        leftButtonSystemIcon: PropTypes.oneOf(Object.keys(SystemIcons)),
+        onLeftButtonPress: PropTypes.func,
+        rightButtonIcon: Image.propTypes.source,
+        rightButtonTitle: PropTypes.string,
+        rightButtonSystemIcon: PropTypes.oneOf(Object.keys(SystemIcons)),
+        onRightButtonPress: PropTypes.func,
+        wrapperStyle: ViewPropTypes.style,
+        navigationBarHidden: PropTypes.bool,
+        shadowHidden: PropTypes.bool,
+        tintColor: PropTypes.string,
+        barTintColor: PropTypes.string,
+        barStyle: PropTypes.oneOf(['default', 'black']),
+        titleTextColor: PropTypes.string,
+        translucent: PropTypes.bool
+      }).isRequired,
+      navigationBarHidden: PropTypes.bool,
+      shadowHidden: PropTypes.bool,
+      itemWrapperStyle: ViewPropTypes.style,
+      tintColor: PropTypes.string,
+      barTintColor: PropTypes.string,
+      barStyle: PropTypes.oneOf(['default', 'black']),
+      titleTextColor: PropTypes.string,
+      translucent: PropTypes.bool,
+      interactivePopGestureEnabled: PropTypes.bool
+    },
+    navigator: undefined,
+    UNSAFE_componentWillMount: function UNSAFE_componentWillMount() {
+      this.navigator = {
+        push: this.push,
+        pop: this.pop,
+        popN: this.popN,
+        replace: this.replace,
+        replaceAtIndex: this.replaceAtIndex,
+        replacePrevious: this.replacePrevious,
+        replacePreviousAndPop: this.replacePreviousAndPop,
+        resetTo: this.resetTo,
+        popToRoute: this.popToRoute,
+        popToTop: this.popToTop
+      };
+    },
+    componentDidMount: function componentDidMount() {
+      this._enableTVEventHandler();
+    },
+    componentWillUnmount: function componentWillUnmount() {
+      this._disableTVEventHandler();
+    },
+    getDefaultProps: function getDefaultProps() {
+      return {
+        translucent: true
+      };
+    },
+    getInitialState: function getInitialState() {
+      return {
+        idStack: [getuid()],
+        routeStack: [this.props.initialRoute],
+        requestedTopOfStack: 0,
+        observedTopOfStack: 0,
+        progress: 1,
+        fromIndex: 0,
+        toIndex: 0,
+        makingNavigatorRequest: false,
+        updatingAllIndicesAtOrBeyond: 0
+      };
+    },
+    _toFocusOnNavigationComplete: undefined,
+    _handleFocusRequest: function _handleFocusRequest(item) {
+      if (this.state.makingNavigatorRequest) {
+        this._toFocusOnNavigationComplete = item;
+      } else {
+        this._getFocusEmitter().emit('focus', item);
+      }
+    },
+    _focusEmitter: undefined,
+    _getFocusEmitter: function _getFocusEmitter() {
+      var focusEmitter = this._focusEmitter;
+
+      if (!focusEmitter) {
+        focusEmitter = new EventEmitter();
+        this._focusEmitter = focusEmitter;
+      }
+
+      return focusEmitter;
+    },
+    getChildContext: function getChildContext() {
+      return {
+        onFocusRequested: this._handleFocusRequest,
+        focusEmitter: this._getFocusEmitter()
+      };
+    },
+    childContextTypes: {
+      onFocusRequested: PropTypes.func,
+      focusEmitter: PropTypes.instanceOf(EventEmitter)
+    },
+    _tryLockNavigator: function _tryLockNavigator(cb) {
+      this.refs[TRANSITIONER_REF].requestSchedulingNavigation(function (acquiredLock) {
+        return acquiredLock && cb();
+      });
+    },
+    _handleNavigatorStackChanged: function _handleNavigatorStackChanged(e) {
+      var newObservedTopOfStack = e.nativeEvent.stackLength - 1;
+      invariant(newObservedTopOfStack <= this.state.requestedTopOfStack, 'No navigator item should be pushed without JS knowing about it %s %s', newObservedTopOfStack, this.state.requestedTopOfStack);
+      var wasWaitingForConfirmation = this.state.requestedTopOfStack !== this.state.observedTopOfStack;
+
+      if (wasWaitingForConfirmation) {
+        invariant(newObservedTopOfStack === this.state.requestedTopOfStack, "If waiting for observedTopOfStack to reach requestedTopOfStack, the only valid observedTopOfStack should be requestedTopOfStack.");
+      }
+
+      var nextState = {
+        observedTopOfStack: newObservedTopOfStack,
+        makingNavigatorRequest: false,
+        updatingAllIndicesAtOrBeyond: null,
+        progress: 1,
+        toIndex: newObservedTopOfStack,
+        fromIndex: newObservedTopOfStack
+      };
+      this.setState(nextState, this._eliminateUnneededChildren);
+    },
+    _eliminateUnneededChildren: function _eliminateUnneededChildren() {
+      var updatingAllIndicesAtOrBeyond = this.state.routeStack.length > this.state.observedTopOfStack + 1 ? this.state.observedTopOfStack + 1 : null;
+      this.setState({
+        idStack: this.state.idStack.slice(0, this.state.observedTopOfStack + 1),
+        routeStack: this.state.routeStack.slice(0, this.state.observedTopOfStack + 1),
+        requestedTopOfStack: this.state.observedTopOfStack,
+        makingNavigatorRequest: true,
+        updatingAllIndicesAtOrBeyond: updatingAllIndicesAtOrBeyond
+      });
+    },
+    push: function push(route) {
+      var _this2 = this;
+
+      invariant(!!route, 'Must supply route to push');
+
+      if (this.state.requestedTopOfStack === this.state.observedTopOfStack) {
+        this._tryLockNavigator(function () {
+          var nextStack = _this2.state.routeStack.concat([route]);
+
+          var nextIDStack = _this2.state.idStack.concat([getuid()]);
+
+          _this2.setState({
+            idStack: nextIDStack,
+            routeStack: nextStack,
+            requestedTopOfStack: nextStack.length - 1,
+            makingNavigatorRequest: true,
+            updatingAllIndicesAtOrBeyond: nextStack.length - 1
+          });
+        });
+      }
+    },
+    popN: function popN(n) {
+      var _this3 = this;
+
+      if (n === 0) {
+        return;
+      }
+
+      if (this.state.requestedTopOfStack === this.state.observedTopOfStack) {
+        if (this.state.requestedTopOfStack > 0) {
+          this._tryLockNavigator(function () {
+            var newRequestedTopOfStack = _this3.state.requestedTopOfStack - n;
+            invariant(newRequestedTopOfStack >= 0, 'Cannot pop below 0');
+
+            _this3.setState({
+              requestedTopOfStack: newRequestedTopOfStack,
+              makingNavigatorRequest: true,
+              updatingAllIndicesAtOrBeyond: _this3.state.requestedTopOfStack - n
+            });
+          });
+        }
+      }
+    },
+    pop: function pop() {
+      this.popN(1);
+    },
+    replaceAtIndex: function replaceAtIndex(route, index) {
+      invariant(!!route, 'Must supply route to replace');
+
+      if (index < 0) {
+        index += this.state.routeStack.length;
+      }
+
+      if (this.state.routeStack.length <= index) {
+        return;
+      }
+
+      var nextIDStack = this.state.idStack.slice();
+      var nextRouteStack = this.state.routeStack.slice();
+      nextIDStack[index] = getuid();
+      nextRouteStack[index] = route;
+      this.setState({
+        idStack: nextIDStack,
+        routeStack: nextRouteStack,
+        makingNavigatorRequest: false,
+        updatingAllIndicesAtOrBeyond: index
+      });
+    },
+    replace: function replace(route) {
+      this.replaceAtIndex(route, -1);
+    },
+    replacePrevious: function replacePrevious(route) {
+      this.replaceAtIndex(route, -2);
+    },
+    popToTop: function popToTop() {
+      this.popToRoute(this.state.routeStack[0]);
+    },
+    popToRoute: function popToRoute(route) {
+      var indexOfRoute = this.state.routeStack.indexOf(route);
+      invariant(indexOfRoute !== -1, 'Calling pop to route for a route that doesn\'t exist!');
+      var numToPop = this.state.routeStack.length - indexOfRoute - 1;
+      this.popN(numToPop);
+    },
+    replacePreviousAndPop: function replacePreviousAndPop(route) {
+      var _this4 = this;
+
+      if (this.state.requestedTopOfStack !== this.state.observedTopOfStack) {
+        return;
+      }
+
+      if (this.state.routeStack.length < 2) {
+        return;
+      }
+
+      this._tryLockNavigator(function () {
+        _this4.replacePrevious(route);
+
+        _this4.setState({
+          requestedTopOfStack: _this4.state.requestedTopOfStack - 1,
+          makingNavigatorRequest: true
+        });
+      });
+    },
+    resetTo: function resetTo(route) {
+      invariant(!!route, 'Must supply route to push');
+
+      if (this.state.requestedTopOfStack !== this.state.observedTopOfStack) {
+        return;
+      }
+
+      this.replaceAtIndex(route, 0);
+      this.popToRoute(route);
+    },
+    _handleNavigationComplete: function _handleNavigationComplete(e) {
+      e.stopPropagation();
+
+      if (this._toFocusOnNavigationComplete) {
+        this._getFocusEmitter().emit('focus', this._toFocusOnNavigationComplete);
+
+        this._toFocusOnNavigationComplete = null;
+      }
+
+      this._handleNavigatorStackChanged(e);
+    },
+    _routeToStackItem: function _routeToStackItem(routeArg, i) {
+      var component = routeArg.component,
+          wrapperStyle = routeArg.wrapperStyle,
+          passProps = routeArg.passProps,
+          route = babelHelpers.objectWithoutProperties(routeArg, ["component", "wrapperStyle", "passProps"]);
+      var _props = this.props,
+          itemWrapperStyle = _props.itemWrapperStyle,
+          props = babelHelpers.objectWithoutProperties(_props, ["itemWrapperStyle"]);
+      var shouldUpdateChild = this.state.updatingAllIndicesAtOrBeyond != null && this.state.updatingAllIndicesAtOrBeyond >= i;
+      var Component = component;
+      return React.createElement(
+        StaticContainer,
+        {
+          key: 'nav' + i,
+          shouldUpdate: shouldUpdateChild
+        },
+        React.createElement(
+          RCTNavigatorItem,
+          babelHelpers.extends({}, props, route, {
+            style: [styles.stackItem, itemWrapperStyle, wrapperStyle]
+          }),
+          React.createElement(Component, babelHelpers.extends({
+            navigator: this.navigator,
+            route: route
+          }, passProps))
+        )
+      );
+    },
+    _renderNavigationStackItems: function _renderNavigationStackItems() {
+      var shouldRecurseToNavigator = this.state.makingNavigatorRequest || this.state.updatingAllIndicesAtOrBeyond !== null;
+      var items = shouldRecurseToNavigator ? this.state.routeStack.map(this._routeToStackItem) : null;
+      return React.createElement(
+        StaticContainer,
+        {
+          shouldUpdate: shouldRecurseToNavigator
+        },
+        React.createElement(
+          NavigatorTransitionerIOS,
+          {
+            ref: TRANSITIONER_REF,
+            style: styles.transitioner,
+            vertical: this.props.vertical,
+            requestedTopOfStack: this.state.requestedTopOfStack,
+            onNavigationComplete: this._handleNavigationComplete,
+            interactivePopGestureEnabled: this.props.interactivePopGestureEnabled
+          },
+          items
+        )
+      );
+    },
+    _tvEventHandler: undefined,
+    _enableTVEventHandler: function _enableTVEventHandler() {
+      this._tvEventHandler = new TVEventHandler();
+
+      this._tvEventHandler.enable(this, function (cmp, evt) {
+        if (evt && evt.eventType === 'menu') {
+          cmp.pop();
+        }
+      });
+    },
+    _disableTVEventHandler: function _disableTVEventHandler() {
+      if (this._tvEventHandler) {
+        this._tvEventHandler.disable();
+
+        delete this._tvEventHandler;
+      }
+    },
+    render: function render() {
+      return React.createElement(
+        View,
+        {
+          style: this.props.style
+        },
+        this._renderNavigationStackItems()
+      );
+    }
+  });
+  var styles = StyleSheet.create({
+    stackItem: {
+      backgroundColor: 'white',
+      overflow: 'hidden',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0
+    },
+    transitioner: {
+      flex: 1
+    }
+  });
+  var RCTNavigator = requireNativeComponent('RCTNavigator');
+  var RCTNavigatorItem = requireNativeComponent('RCTNavItem');
+  module.exports = NavigatorIOS;
+},248,[38,205,17,103,120,46,249,111,172,133,135,157,15,146,118]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var React = _require(_dependencyMap[0]);
+
+  var StaticContainer = function (_React$Component) {
+    babelHelpers.inherits(StaticContainer, _React$Component);
+
+    function StaticContainer() {
+      babelHelpers.classCallCheck(this, StaticContainer);
+      return babelHelpers.possibleConstructorReturn(this, (StaticContainer.__proto__ || Object.getPrototypeOf(StaticContainer)).apply(this, arguments));
+    }
+
+    babelHelpers.createClass(StaticContainer, [{
+      key: "shouldComponentUpdate",
+      value: function shouldComponentUpdate(nextProps) {
+        return !!nextProps.shouldUpdate;
+      }
+    }, {
+      key: "render",
+      value: function render() {
+        var child = this.props.children;
+        return child === null || child === false ? null : React.Children.only(child);
+      }
+    }]);
+    return StaticContainer;
+  }(React.Component);
+
+  module.exports = StaticContainer;
+},249,[103]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -29441,7 +29388,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       value: function render() {
         {
           return React.createElement(
-            PickerAndroid,
+            PickerIOS,
             this.props,
             this.props.children
           );
@@ -29462,231 +29409,229 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     testID: PropTypes.string
   }), _temp2);
   module.exports = Picker;
-},250,[43,968,969,958,103,120,143,126,110,135,127]);
+},250,[43,251,252,25,103,120,143,126,110,135,127]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
-  module.exports = _require(_dependencyMap[0]);
-},968,[110]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
+  var _class, _temp;
 
-  var _class, _temp, _initialiseProps;
-
-  var ColorPropType = _require(_dependencyMap[0]);
+  var NativeMethodsMixin = _require(_dependencyMap[0]);
 
   var React = _require(_dependencyMap[1]);
 
-  var ReactPropTypes = _require(_dependencyMap[2]);
+  var PropTypes = _require(_dependencyMap[2]);
 
   var StyleSheet = _require(_dependencyMap[3]);
 
   var StyleSheetPropType = _require(_dependencyMap[4]);
 
-  var ViewPropTypes = _require(_dependencyMap[5]);
+  var TextStylePropTypes = _require(_dependencyMap[5]);
 
-  var ViewStylePropTypes = _require(_dependencyMap[6]);
+  var View = _require(_dependencyMap[6]);
 
-  var processColor = _require(_dependencyMap[7]);
+  var ViewPropTypes = _require(_dependencyMap[7]);
 
-  var requireNativeComponent = _require(_dependencyMap[8]);
+  var processColor = _require(_dependencyMap[8]);
 
-  var REF_PICKER = 'picker';
-  var MODE_DROPDOWN = 'dropdown';
-  var pickerStyleType = StyleSheetPropType(babelHelpers.extends({}, ViewStylePropTypes, {
-    color: ColorPropType
-  }));
-  var PickerAndroid = (_temp = _class = function (_React$Component) {
-    babelHelpers.inherits(PickerAndroid, _React$Component);
+  var createReactClass = _require(_dependencyMap[9]);
 
-    function PickerAndroid(props, context) {
-      babelHelpers.classCallCheck(this, PickerAndroid);
+  var itemStylePropType = StyleSheetPropType(TextStylePropTypes);
 
-      var _this = babelHelpers.possibleConstructorReturn(this, (PickerAndroid.__proto__ || Object.getPrototypeOf(PickerAndroid)).call(this, props, context));
+  var requireNativeComponent = _require(_dependencyMap[10]);
 
-      _initialiseProps.call(_this);
-
-      var state = _this._stateFromProps(props);
-
-      _this.state = babelHelpers.extends({}, state, {
-        initialSelectedIndex: state.selectedIndex
-      });
-      return _this;
-    }
-
-    babelHelpers.createClass(PickerAndroid, [{
-      key: "UNSAFE_componentWillReceiveProps",
-      value: function UNSAFE_componentWillReceiveProps(nextProps) {
-        this.setState(this._stateFromProps(nextProps));
-      }
-    }, {
-      key: "render",
-      value: function render() {
-        var Picker = this.props.mode === MODE_DROPDOWN ? DropdownPicker : DialogPicker;
-        var nativeProps = {
-          enabled: this.props.enabled,
-          items: this.state.items,
-          mode: this.props.mode,
-          onSelect: this._onChange,
-          prompt: this.props.prompt,
-          selected: this.state.initialSelectedIndex,
-          testID: this.props.testID,
-          style: [styles.pickerAndroid, this.props.style],
-          accessibilityLabel: this.props.accessibilityLabel
-        };
-        return React.createElement(Picker, babelHelpers.extends({
-          ref: REF_PICKER
-        }, nativeProps));
-      }
-    }, {
-      key: "componentDidMount",
-      value: function componentDidMount() {
-        this._lastNativePosition = this.state.initialSelectedIndex;
-      }
-    }, {
-      key: "componentDidUpdate",
-      value: function componentDidUpdate() {
-        if (this.refs[REF_PICKER] && this.state.selectedIndex !== this._lastNativePosition) {
-          this.refs[REF_PICKER].setNativeProps({
-            selected: this.state.selectedIndex
-          });
-          this._lastNativePosition = this.state.selectedIndex;
-        }
-      }
-    }]);
-    return PickerAndroid;
-  }(React.Component), _class.propTypes = babelHelpers.extends({}, ViewPropTypes, {
-    style: pickerStyleType,
-    selectedValue: ReactPropTypes.any,
-    enabled: ReactPropTypes.bool,
-    mode: ReactPropTypes.oneOf(['dialog', 'dropdown']),
-    onValueChange: ReactPropTypes.func,
-    prompt: ReactPropTypes.string,
-    testID: ReactPropTypes.string
-  }), _initialiseProps = function _initialiseProps() {
-    var _this2 = this;
-
-    this._stateFromProps = function (props) {
+  var PickerIOS = createReactClass({
+    displayName: 'PickerIOS',
+    mixins: [NativeMethodsMixin],
+    propTypes: babelHelpers.extends({}, ViewPropTypes, {
+      itemStyle: itemStylePropType,
+      onValueChange: PropTypes.func,
+      selectedValue: PropTypes.any
+    }),
+    getInitialState: function getInitialState() {
+      return this._stateFromProps(this.props);
+    },
+    UNSAFE_componentWillReceiveProps: function UNSAFE_componentWillReceiveProps(nextProps) {
+      this.setState(this._stateFromProps(nextProps));
+    },
+    _stateFromProps: function _stateFromProps(props) {
       var selectedIndex = 0;
-      var items = React.Children.map(props.children, function (child, index) {
+      var items = [];
+      React.Children.toArray(props.children).forEach(function (child, index) {
         if (child.props.value === props.selectedValue) {
           selectedIndex = index;
         }
 
-        var childProps = {
+        items.push({
           value: child.props.value,
-          label: child.props.label
-        };
-
-        if (child.props.color) {
-          childProps.color = processColor(child.props.color);
-        }
-
-        return childProps;
+          label: child.props.label,
+          textColor: processColor(child.props.color)
+        });
       });
       return {
         selectedIndex: selectedIndex,
         items: items
       };
-    };
+    },
+    render: function render() {
+      var _this = this;
 
-    this._onChange = function (event) {
-      if (_this2.props.onValueChange) {
-        var position = event.nativeEvent.position;
-
-        if (position >= 0) {
-          var children = React.Children.toArray(_this2.props.children);
-          var value = children[position].props.value;
-
-          _this2.props.onValueChange(value, position);
-        } else {
-          _this2.props.onValueChange(null, position);
-        }
+      return React.createElement(
+        View,
+        {
+          style: this.props.style
+        },
+        React.createElement(RCTPickerIOS, {
+          ref: function ref(picker) {
+            return _this._picker = picker;
+          },
+          style: [styles.pickerIOS, this.props.itemStyle],
+          items: this.state.items,
+          selectedIndex: this.state.selectedIndex,
+          onChange: this._onChange,
+          onStartShouldSetResponder: function onStartShouldSetResponder() {
+            return true;
+          },
+          onResponderTerminationRequest: function onResponderTerminationRequest() {
+            return false;
+          }
+        })
+      );
+    },
+    _onChange: function _onChange(event) {
+      if (this.props.onChange) {
+        this.props.onChange(event);
       }
 
-      _this2._lastNativePosition = event.nativeEvent.position;
+      if (this.props.onValueChange) {
+        this.props.onValueChange(event.nativeEvent.newValue, event.nativeEvent.newIndex);
+      }
 
-      _this2.forceUpdate();
-    };
-  }, _temp);
-  var styles = StyleSheet.create({
-    pickerAndroid: {
-      height: 50
+      if (this._picker && this.state.selectedIndex !== event.nativeEvent.newIndex) {
+        this._picker.setNativeProps({
+          selectedIndex: this.state.selectedIndex
+        });
+      }
     }
   });
-  var cfg = {
-    nativeOnly: {
-      items: true,
-      selected: true
-    }
-  };
-  var DropdownPicker = requireNativeComponent('AndroidDropdownPicker', PickerAndroid, cfg);
-  var DialogPicker = requireNativeComponent('AndroidDialogPicker', PickerAndroid, cfg);
-  module.exports = PickerAndroid;
-},969,[43,103,120,111,143,135,127,128,146]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
+  PickerIOS.Item = (_temp = _class = function (_React$Component) {
+    babelHelpers.inherits(_class, _React$Component);
 
-  var React = _require(_dependencyMap[0]);
-
-  var StyleSheet = _require(_dependencyMap[1]);
-
-  var Text = _require(_dependencyMap[2]);
-
-  var View = _require(_dependencyMap[3]);
-
-  var DummyProgressViewIOS = function (_React$Component) {
-    babelHelpers.inherits(DummyProgressViewIOS, _React$Component);
-
-    function DummyProgressViewIOS() {
-      babelHelpers.classCallCheck(this, DummyProgressViewIOS);
-      return babelHelpers.possibleConstructorReturn(this, (DummyProgressViewIOS.__proto__ || Object.getPrototypeOf(DummyProgressViewIOS)).apply(this, arguments));
+    function _class() {
+      babelHelpers.classCallCheck(this, _class);
+      return babelHelpers.possibleConstructorReturn(this, (_class.__proto__ || Object.getPrototypeOf(_class)).apply(this, arguments));
     }
 
-    babelHelpers.createClass(DummyProgressViewIOS, [{
+    babelHelpers.createClass(_class, [{
       key: "render",
       value: function render() {
-        return React.createElement(
-          View,
-          {
-            style: [styles.dummy, this.props.style]
-          },
-          React.createElement(
-            Text,
-            {
-              style: styles.text
-            },
-            "ProgressViewIOS is not supported on this platform!"
-          )
-        );
+        return null;
       }
     }]);
-    return DummyProgressViewIOS;
-  }(React.Component);
-
+    return _class;
+  }(React.Component), _class.propTypes = {
+    value: PropTypes.any,
+    label: PropTypes.string,
+    color: PropTypes.string
+  }, _temp);
   var styles = StyleSheet.create({
-    dummy: {
-      width: 120,
-      height: 20,
-      backgroundColor: '#ffbcbc',
-      borderWidth: 1,
-      borderColor: 'red',
-      alignItems: 'center',
-      justifyContent: 'center'
-    },
-    text: {
-      color: '#333333',
-      margin: 5,
-      fontSize: 10
+    pickerIOS: {
+      height: 216
     }
   });
-  module.exports = DummyProgressViewIOS;
-},970,[103,111,166,133]);
+  var RCTPickerIOS = requireNativeComponent('RCTPicker', {
+    propTypes: {
+      style: itemStylePropType
+    }
+  }, {
+    nativeOnly: {
+      items: true,
+      onChange: true,
+      selectedIndex: true
+    }
+  });
+  module.exports = PickerIOS;
+},251,[45,103,120,111,143,126,133,135,128,157,146]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
   module.exports = _require(_dependencyMap[0]);
-},971,[133]);
+},252,[110]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var Image = _require(_dependencyMap[0]);
+
+  var NativeMethodsMixin = _require(_dependencyMap[1]);
+
+  var React = _require(_dependencyMap[2]);
+
+  var PropTypes = _require(_dependencyMap[3]);
+
+  var StyleSheet = _require(_dependencyMap[4]);
+
+  var ViewPropTypes = _require(_dependencyMap[5]);
+
+  var createReactClass = _require(_dependencyMap[6]);
+
+  var requireNativeComponent = _require(_dependencyMap[7]);
+
+  var ProgressViewIOS = createReactClass({
+    displayName: 'ProgressViewIOS',
+    mixins: [NativeMethodsMixin],
+    propTypes: babelHelpers.extends({}, ViewPropTypes, {
+      progressViewStyle: PropTypes.oneOf(['default', 'bar']),
+      progress: PropTypes.number,
+      progressTintColor: PropTypes.string,
+      trackTintColor: PropTypes.string,
+      progressImage: Image.propTypes.source,
+      trackImage: Image.propTypes.source
+    }),
+    render: function render() {
+      return React.createElement(RCTProgressView, babelHelpers.extends({}, this.props, {
+        style: [styles.progressView, this.props.style]
+      }));
+    }
+  });
+  var styles = StyleSheet.create({
+    progressView: {
+      height: 2
+    }
+  });
+  var RCTProgressView = requireNativeComponent('RCTProgressView', ProgressViewIOS);
+  module.exports = ProgressViewIOS;
+},253,[205,45,103,120,111,135,157,146]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  var _class, _temp;
+
+  var React = _require(_dependencyMap[0]);
+
+  var ViewPropTypes = _require(_dependencyMap[1]);
+
+  var requireNativeComponent = _require(_dependencyMap[2]);
+
+  var SafeAreaView = (_temp = _class = function (_React$Component) {
+    babelHelpers.inherits(SafeAreaView, _React$Component);
+
+    function SafeAreaView() {
+      babelHelpers.classCallCheck(this, SafeAreaView);
+      return babelHelpers.possibleConstructorReturn(this, (SafeAreaView.__proto__ || Object.getPrototypeOf(SafeAreaView)).apply(this, arguments));
+    }
+
+    babelHelpers.createClass(SafeAreaView, [{
+      key: "render",
+      value: function render() {
+        return React.createElement(RCTSafeAreaView, this.props);
+      }
+    }]);
+    return SafeAreaView;
+  }(React.Component), _class.propTypes = babelHelpers.extends({}, ViewPropTypes), _temp);
+  var RCTSafeAreaView = requireNativeComponent('RCTSafeAreaView', {
+    name: 'RCTSafeAreaView',
+    displayName: 'RCTSafeAreaView',
+    propTypes: babelHelpers.extends({}, ViewPropTypes)
+  });
+  module.exports = SafeAreaView;
+},254,[103,135,146]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -29703,7 +29648,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   var VirtualizedSectionList = _require(_dependencyMap[4]);
 
   var defaultProps = babelHelpers.extends({}, VirtualizedSectionList.defaultProps, {
-    stickySectionHeadersEnabled: false
+    stickySectionHeadersEnabled: true
   });
   var SectionList = (_temp2 = _class = function (_React$PureComponent) {
     babelHelpers.inherits(SectionList, _React$PureComponent);
@@ -29782,7 +29727,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     return SectionList;
   }(React.PureComponent), _class.defaultProps = defaultProps, _temp2);
   module.exports = SectionList;
-},255,[226,958,103,207,256]);
+},255,[226,25,103,207,256]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -30192,61 +30137,59 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
-  var React = _require(_dependencyMap[0]);
+  var NativeMethodsMixin = _require(_dependencyMap[0]);
 
-  var StyleSheet = _require(_dependencyMap[1]);
+  var React = _require(_dependencyMap[1]);
 
-  var Text = _require(_dependencyMap[2]);
+  var PropTypes = _require(_dependencyMap[2]);
 
-  var View = _require(_dependencyMap[3]);
+  var StyleSheet = _require(_dependencyMap[3]);
 
-  var DummySegmentedControlIOS = function (_React$Component) {
-    babelHelpers.inherits(DummySegmentedControlIOS, _React$Component);
+  var ViewPropTypes = _require(_dependencyMap[4]);
 
-    function DummySegmentedControlIOS() {
-      babelHelpers.classCallCheck(this, DummySegmentedControlIOS);
-      return babelHelpers.possibleConstructorReturn(this, (DummySegmentedControlIOS.__proto__ || Object.getPrototypeOf(DummySegmentedControlIOS)).apply(this, arguments));
-    }
+  var createReactClass = _require(_dependencyMap[5]);
 
-    babelHelpers.createClass(DummySegmentedControlIOS, [{
-      key: "render",
-      value: function render() {
-        return React.createElement(
-          View,
-          {
-            style: [styles.dummy, this.props.style]
-          },
-          React.createElement(
-            Text,
-            {
-              style: styles.text
-            },
-            "SegmentedControlIOS is not supported on this platform!"
-          )
-        );
-      }
-    }]);
-    return DummySegmentedControlIOS;
-  }(React.Component);
+  var requireNativeComponent = _require(_dependencyMap[6]);
 
-  var styles = StyleSheet.create({
-    dummy: {
-      width: 120,
-      height: 50,
-      backgroundColor: '#ffbcbc',
-      borderWidth: 1,
-      borderColor: 'red',
-      alignItems: 'center',
-      justifyContent: 'center'
+  var SEGMENTED_CONTROL_REFERENCE = 'segmentedcontrol';
+  var SegmentedControlIOS = createReactClass({
+    displayName: 'SegmentedControlIOS',
+    mixins: [NativeMethodsMixin],
+    propTypes: babelHelpers.extends({}, ViewPropTypes, {
+      values: PropTypes.arrayOf(PropTypes.string),
+      selectedIndex: PropTypes.number,
+      onValueChange: PropTypes.func,
+      onChange: PropTypes.func,
+      enabled: PropTypes.bool,
+      tintColor: PropTypes.string,
+      momentary: PropTypes.bool
+    }),
+    getDefaultProps: function getDefaultProps() {
+      return {
+        values: [],
+        enabled: true
+      };
     },
-    text: {
-      color: '#333333',
-      margin: 5,
-      fontSize: 10
+    _onChange: function _onChange(event) {
+      this.props.onChange && this.props.onChange(event);
+      this.props.onValueChange && this.props.onValueChange(event.nativeEvent.value);
+    },
+    render: function render() {
+      return React.createElement(RCTSegmentedControl, babelHelpers.extends({}, this.props, {
+        ref: SEGMENTED_CONTROL_REFERENCE,
+        style: [styles.segmentedControl, this.props.style],
+        onChange: this._onChange
+      }));
     }
   });
-  module.exports = DummySegmentedControlIOS;
-},972,[103,111,166,133]);
+  var styles = StyleSheet.create({
+    segmentedControl: {
+      height: 28
+    }
+  });
+  var RCTSegmentedControl = requireNativeComponent('RCTSegmentedControl', SegmentedControlIOS);
+  module.exports = SegmentedControlIOS;
+},257,[45,103,120,111,135,157,146]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -30318,9 +30261,6 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
       props.onValueChange = onValueChange && function (event) {
         var userEvent = true;
-        {
-          userEvent = event.nativeEvent.fromUser;
-        }
         onValueChange && userEvent && onValueChange(event.nativeEvent.value);
       };
 
@@ -30344,25 +30284,82 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   var styles = void 0;
   {
     styles = StyleSheet.create({
-      slider: {}
+      slider: {
+        height: 40
+      }
     });
   }
   var options = {};
-  {
-    options = {
-      nativeOnly: {
-        enabled: true
-      }
-    };
-  }
   var RCTSlider = requireNativeComponent('RCTSlider', Slider, options);
   module.exports = Slider;
-},258,[962,43,45,134,958,103,120,111,135,157,146]);
-__d(function (global, _require, module, exports, _dependencyMap) {
+},258,[205,43,45,134,25,103,120,111,135,157,146]);
+__d(function (global, _require2, module, exports, _dependencyMap) {
   'use strict';
 
-  module.exports = _require(_dependencyMap[0]);
-},973,[110]);
+  var _class, _temp2;
+
+  var React = _require2(_dependencyMap[0]);
+
+  var PropTypes = _require2(_dependencyMap[1]);
+
+  var StyleSheet = _require2(_dependencyMap[2]);
+
+  var _require = _require2(_dependencyMap[3]),
+      TestModule = _require.TestModule;
+
+  var UIManager = _require2(_dependencyMap[4]);
+
+  var View = _require2(_dependencyMap[5]);
+
+  var ViewPropTypes = _require2(_dependencyMap[6]);
+
+  var requireNativeComponent = _require2(_dependencyMap[7]);
+
+  var SnapshotViewIOS = (_temp2 = _class = function (_React$Component) {
+    babelHelpers.inherits(SnapshotViewIOS, _React$Component);
+
+    function SnapshotViewIOS() {
+      var _ref;
+
+      var _temp, _this, _ret;
+
+      babelHelpers.classCallCheck(this, SnapshotViewIOS);
+
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      return _ret = (_temp = (_this = babelHelpers.possibleConstructorReturn(this, (_ref = SnapshotViewIOS.__proto__ || Object.getPrototypeOf(SnapshotViewIOS)).call.apply(_ref, [this].concat(args))), _this), _this.onDefaultAction = function (event) {
+        TestModule.verifySnapshot(TestModule.markTestPassed);
+      }, _temp), babelHelpers.possibleConstructorReturn(_this, _ret);
+    }
+
+    babelHelpers.createClass(SnapshotViewIOS, [{
+      key: "render",
+      value: function render() {
+        var testIdentifier = this.props.testIdentifier || 'test';
+        var onSnapshotReady = this.props.onSnapshotReady || this.onDefaultAction;
+        return React.createElement(RCTSnapshot, babelHelpers.extends({
+          style: style.snapshot
+        }, this.props, {
+          onSnapshotReady: onSnapshotReady,
+          testIdentifier: testIdentifier
+        }));
+      }
+    }]);
+    return SnapshotViewIOS;
+  }(React.Component), _class.propTypes = babelHelpers.extends({}, ViewPropTypes, {
+    onSnapshotReady: PropTypes.func,
+    testIdentifier: PropTypes.string
+  }), _temp2);
+  var style = StyleSheet.create({
+    snapshot: {
+      flex: 1
+    }
+  });
+  var RCTSnapshot = UIManager.RCTSnapshot ? requireNativeComponent('RCTSnapshot', SnapshotViewIOS) : View;
+  module.exports = SnapshotViewIOS;
+},259,[103,120,111,17,97,133,135,146]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -30406,7 +30403,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     _onChange: function _onChange(event) {
       {
         this._rctSwitch.setNativeProps({
-          on: this.props.value
+          value: this.props.value
         });
       }
       this.props.onChange && this.props.onChange(event);
@@ -30426,10 +30423,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       };
 
       {
-        props.enabled = !this.props.disabled;
-        props.on = this.props.value;
-        props.style = this.props.style;
-        props.trackTintColor = this.props.value ? this.props.onTintColor : this.props.tintColor;
+        props.style = [styles.rctSwitchIOS, this.props.style];
       }
       return React.createElement(RCTSwitch, babelHelpers.extends({}, props, {
         ref: function ref(_ref) {
@@ -30446,17 +30440,202 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     }
   });
   {
-    var RCTSwitch = requireNativeComponent('AndroidSwitch', Switch, {
+    var RCTSwitch = requireNativeComponent('RCTSwitch', Switch, {
       nativeOnly: {
-        onChange: true,
-        on: true,
-        enabled: true,
-        trackTintColor: true
+        onChange: true
       }
     });
   }
   module.exports = Switch;
-},260,[43,45,958,103,120,111,135,157,146]);
+},260,[43,45,25,103,120,111,135,157,146]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var _class, _temp2;
+
+  var React = _require(_dependencyMap[0]);
+
+  var PropTypes = _require(_dependencyMap[1]);
+
+  var ColorPropType = _require(_dependencyMap[2]);
+
+  var Platform = _require(_dependencyMap[3]);
+
+  var processColor = _require(_dependencyMap[4]);
+
+  var StatusBarManager = _require(_dependencyMap[5]).StatusBarManager;
+
+  function mergePropsStack(propsStack, defaultValues) {
+    return propsStack.reduce(function (prev, cur) {
+      for (var prop in cur) {
+        if (cur[prop] != null) {
+          prev[prop] = cur[prop];
+        }
+      }
+
+      return prev;
+    }, babelHelpers.extends({}, defaultValues));
+  }
+
+  function createStackEntry(props) {
+    return {
+      backgroundColor: props.backgroundColor != null ? {
+        value: props.backgroundColor,
+        animated: props.animated
+      } : null,
+      barStyle: props.barStyle != null ? {
+        value: props.barStyle,
+        animated: props.animated
+      } : null,
+      translucent: props.translucent,
+      hidden: props.hidden != null ? {
+        value: props.hidden,
+        animated: props.animated,
+        transition: props.showHideTransition
+      } : null,
+      networkActivityIndicatorVisible: props.networkActivityIndicatorVisible
+    };
+  }
+
+  var StatusBar = (_temp2 = _class = function (_React$Component) {
+    babelHelpers.inherits(StatusBar, _React$Component);
+
+    function StatusBar() {
+      var _ref;
+
+      var _temp, _this, _ret;
+
+      babelHelpers.classCallCheck(this, StatusBar);
+
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      return _ret = (_temp = (_this = babelHelpers.possibleConstructorReturn(this, (_ref = StatusBar.__proto__ || Object.getPrototypeOf(StatusBar)).call.apply(_ref, [this].concat(args))), _this), _this._stackEntry = null, _this._updatePropsStack = function () {
+        clearImmediate(StatusBar._updateImmediate);
+        StatusBar._updateImmediate = setImmediate(function () {
+          var oldProps = StatusBar._currentValues;
+          var mergedProps = mergePropsStack(StatusBar._propsStack, StatusBar._defaultProps);
+          {
+            if (!oldProps || oldProps.barStyle.value !== mergedProps.barStyle.value) {
+              StatusBarManager.setStyle(mergedProps.barStyle.value, mergedProps.barStyle.animated);
+            }
+
+            if (!oldProps || oldProps.hidden.value !== mergedProps.hidden.value) {
+              StatusBarManager.setHidden(mergedProps.hidden.value, mergedProps.hidden.animated ? mergedProps.hidden.transition : 'none');
+            }
+
+            if (!oldProps || oldProps.networkActivityIndicatorVisible !== mergedProps.networkActivityIndicatorVisible) {
+              StatusBarManager.setNetworkActivityIndicatorVisible(mergedProps.networkActivityIndicatorVisible);
+            }
+          }
+          StatusBar._currentValues = mergedProps;
+        });
+      }, _temp), babelHelpers.possibleConstructorReturn(_this, _ret);
+    }
+
+    babelHelpers.createClass(StatusBar, [{
+      key: "componentDidMount",
+      value: function componentDidMount() {
+        this._stackEntry = createStackEntry(this.props);
+
+        StatusBar._propsStack.push(this._stackEntry);
+
+        this._updatePropsStack();
+      }
+    }, {
+      key: "componentWillUnmount",
+      value: function componentWillUnmount() {
+        var index = StatusBar._propsStack.indexOf(this._stackEntry);
+
+        StatusBar._propsStack.splice(index, 1);
+
+        this._updatePropsStack();
+      }
+    }, {
+      key: "componentDidUpdate",
+      value: function componentDidUpdate() {
+        var index = StatusBar._propsStack.indexOf(this._stackEntry);
+
+        this._stackEntry = createStackEntry(this.props);
+        StatusBar._propsStack[index] = this._stackEntry;
+
+        this._updatePropsStack();
+      }
+    }, {
+      key: "render",
+      value: function render() {
+        return null;
+      }
+    }], [{
+      key: "setHidden",
+      value: function setHidden(hidden, animation) {
+        animation = animation || 'none';
+        StatusBar._defaultProps.hidden.value = hidden;
+        {
+          StatusBarManager.setHidden(hidden, animation);
+        }
+      }
+    }, {
+      key: "setBarStyle",
+      value: function setBarStyle(style, animated) {
+        animated = animated || false;
+        StatusBar._defaultProps.barStyle.value = style;
+        {
+          StatusBarManager.setStyle(style, animated);
+        }
+      }
+    }, {
+      key: "setNetworkActivityIndicatorVisible",
+      value: function setNetworkActivityIndicatorVisible(visible) {
+        StatusBar._defaultProps.networkActivityIndicatorVisible = visible;
+        StatusBarManager.setNetworkActivityIndicatorVisible(visible);
+      }
+    }, {
+      key: "setBackgroundColor",
+      value: function setBackgroundColor(color, animated) {
+        {
+          console.warn('`setBackgroundColor` is only available on Android');
+          return;
+        }
+        animated = animated || false;
+        StatusBar._defaultProps.backgroundColor.value = color;
+        StatusBarManager.setColor(processColor(color), animated);
+      }
+    }, {
+      key: "setTranslucent",
+      value: function setTranslucent(translucent) {
+        {
+          console.warn('`setTranslucent` is only available on Android');
+          return;
+        }
+        StatusBar._defaultProps.translucent = translucent;
+        StatusBarManager.setTranslucent(translucent);
+      }
+    }]);
+    return StatusBar;
+  }(React.Component), _class._propsStack = [], _class._defaultProps = createStackEntry({
+    animated: false,
+    showHideTransition: 'fade',
+    backgroundColor: 'black',
+    barStyle: 'default',
+    translucent: false,
+    hidden: false,
+    networkActivityIndicatorVisible: false
+  }), _class._updateImmediate = null, _class._currentValues = null, _class.currentHeight = StatusBarManager.HEIGHT, _class.propTypes = {
+    hidden: PropTypes.bool,
+    animated: PropTypes.bool,
+    backgroundColor: ColorPropType,
+    translucent: PropTypes.bool,
+    barStyle: PropTypes.oneOf(['default', 'light-content', 'dark-content']),
+    networkActivityIndicatorVisible: PropTypes.bool,
+    showHideTransition: PropTypes.oneOf(['fade', 'slide'])
+  }, _class.defaultProps = {
+    animated: false,
+    showHideTransition: 'fade'
+  }, _temp2);
+  module.exports = StatusBar;
+},261,[103,120,43,25,128,17]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -31294,91 +31473,181 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
   var _class, _temp;
 
-  var React = _require(_dependencyMap[0]);
+  var ColorPropType = _require(_dependencyMap[0]);
 
-  var StyleSheet = _require(_dependencyMap[1]);
+  var React = _require(_dependencyMap[1]);
 
-  var TabBarItemIOS = _require(_dependencyMap[2]);
+  var PropTypes = _require(_dependencyMap[2]);
 
-  var View = _require(_dependencyMap[3]);
+  var StyleSheet = _require(_dependencyMap[3]);
 
-  var DummyTabBarIOS = (_temp = _class = function (_React$Component) {
-    babelHelpers.inherits(DummyTabBarIOS, _React$Component);
+  var TabBarItemIOS = _require(_dependencyMap[4]);
 
-    function DummyTabBarIOS() {
-      babelHelpers.classCallCheck(this, DummyTabBarIOS);
-      return babelHelpers.possibleConstructorReturn(this, (DummyTabBarIOS.__proto__ || Object.getPrototypeOf(DummyTabBarIOS)).apply(this, arguments));
+  var ViewPropTypes = _require(_dependencyMap[5]);
+
+  var requireNativeComponent = _require(_dependencyMap[6]);
+
+  var TabBarIOS = (_temp = _class = function (_React$Component) {
+    babelHelpers.inherits(TabBarIOS, _React$Component);
+
+    function TabBarIOS() {
+      babelHelpers.classCallCheck(this, TabBarIOS);
+      return babelHelpers.possibleConstructorReturn(this, (TabBarIOS.__proto__ || Object.getPrototypeOf(TabBarIOS)).apply(this, arguments));
     }
 
-    babelHelpers.createClass(DummyTabBarIOS, [{
+    babelHelpers.createClass(TabBarIOS, [{
       key: "render",
       value: function render() {
         return React.createElement(
-          View,
+          RCTTabBar,
           {
-            style: [this.props.style, styles.tabGroup]
+            style: [styles.tabGroup, this.props.style],
+            unselectedTintColor: this.props.unselectedTintColor,
+            unselectedItemTintColor: this.props.unselectedItemTintColor,
+            tintColor: this.props.tintColor,
+            barTintColor: this.props.barTintColor,
+            barStyle: this.props.barStyle,
+            itemPositioning: this.props.itemPositioning,
+            translucent: this.props.translucent !== false
           },
           this.props.children
         );
       }
     }]);
-    return DummyTabBarIOS;
-  }(React.Component), _class.Item = TabBarItemIOS, _temp);
+    return TabBarIOS;
+  }(React.Component), _class.Item = TabBarItemIOS, _class.propTypes = babelHelpers.extends({}, ViewPropTypes, {
+    style: ViewPropTypes.style,
+    unselectedTintColor: ColorPropType,
+    tintColor: ColorPropType,
+    unselectedItemTintColor: ColorPropType,
+    barTintColor: ColorPropType,
+    barStyle: PropTypes.oneOf(['default', 'black']),
+    translucent: PropTypes.bool,
+    itemPositioning: PropTypes.oneOf(['fill', 'center', 'auto'])
+  }), _temp);
   var styles = StyleSheet.create({
     tabGroup: {
       flex: 1
     }
   });
-  module.exports = DummyTabBarIOS;
-},974,[103,111,975,133]);
+  var RCTTabBar = requireNativeComponent('RCTTabBar', TabBarIOS);
+  module.exports = TabBarIOS;
+},268,[43,103,120,111,269,135,146]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
-  var React = _require(_dependencyMap[0]);
+  var _class, _temp2;
 
-  var View = _require(_dependencyMap[1]);
+  var ColorPropType = _require(_dependencyMap[0]);
 
-  var StyleSheet = _require(_dependencyMap[2]);
+  var Image = _require(_dependencyMap[1]);
 
-  var DummyTab = function (_React$Component) {
-    babelHelpers.inherits(DummyTab, _React$Component);
+  var React = _require(_dependencyMap[2]);
 
-    function DummyTab() {
-      babelHelpers.classCallCheck(this, DummyTab);
-      return babelHelpers.possibleConstructorReturn(this, (DummyTab.__proto__ || Object.getPrototypeOf(DummyTab)).apply(this, arguments));
+  var PropTypes = _require(_dependencyMap[3]);
+
+  var StaticContainer = _require(_dependencyMap[4]);
+
+  var StyleSheet = _require(_dependencyMap[5]);
+
+  var View = _require(_dependencyMap[6]);
+
+  var ViewPropTypes = _require(_dependencyMap[7]);
+
+  var requireNativeComponent = _require(_dependencyMap[8]);
+
+  var TabBarItemIOS = (_temp2 = _class = function (_React$Component) {
+    babelHelpers.inherits(TabBarItemIOS, _React$Component);
+
+    function TabBarItemIOS() {
+      var _ref;
+
+      var _temp, _this, _ret;
+
+      babelHelpers.classCallCheck(this, TabBarItemIOS);
+
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      return _ret = (_temp = (_this = babelHelpers.possibleConstructorReturn(this, (_ref = TabBarItemIOS.__proto__ || Object.getPrototypeOf(TabBarItemIOS)).call.apply(_ref, [this].concat(args))), _this), _this.state = {
+        hasBeenSelected: false
+      }, _temp), babelHelpers.possibleConstructorReturn(_this, _ret);
     }
 
-    babelHelpers.createClass(DummyTab, [{
+    babelHelpers.createClass(TabBarItemIOS, [{
+      key: "UNSAFE_componentWillMount",
+      value: function UNSAFE_componentWillMount() {
+        if (this.props.selected) {
+          this.setState({
+            hasBeenSelected: true
+          });
+        }
+      }
+    }, {
+      key: "UNSAFE_componentWillReceiveProps",
+      value: function UNSAFE_componentWillReceiveProps(nextProps) {
+        if (this.state.hasBeenSelected || nextProps.selected) {
+          this.setState({
+            hasBeenSelected: true
+          });
+        }
+      }
+    }, {
       key: "render",
       value: function render() {
-        if (!this.props.selected) {
-          return React.createElement(View, null);
+        var _props = this.props,
+            style = _props.style,
+            children = _props.children,
+            props = babelHelpers.objectWithoutProperties(_props, ["style", "children"]);
+
+        if (this.state.hasBeenSelected) {
+          var tabContents = React.createElement(
+            StaticContainer,
+            {
+              shouldUpdate: this.props.selected
+            },
+            children
+          );
+        } else {
+          var tabContents = React.createElement(View, null);
         }
 
         return React.createElement(
-          View,
-          {
-            style: [this.props.style, styles.tab]
-          },
-          this.props.children
+          RCTTabBarItem,
+          babelHelpers.extends({}, props, {
+            style: [styles.tab, style]
+          }),
+          tabContents
         );
       }
     }]);
-    return DummyTab;
-  }(React.Component);
-
+    return TabBarItemIOS;
+  }(React.Component), _class.propTypes = babelHelpers.extends({}, ViewPropTypes, {
+    badge: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    badgeColor: ColorPropType,
+    systemIcon: PropTypes.oneOf(['bookmarks', 'contacts', 'downloads', 'favorites', 'featured', 'history', 'more', 'most-recent', 'most-viewed', 'recents', 'search', 'top-rated']),
+    icon: Image.propTypes.source,
+    selectedIcon: Image.propTypes.source,
+    onPress: PropTypes.func,
+    renderAsOriginal: PropTypes.bool,
+    selected: PropTypes.bool,
+    style: ViewPropTypes.style,
+    title: PropTypes.string,
+    isTVSelectable: PropTypes.bool
+  }), _temp2);
   var styles = StyleSheet.create({
     tab: {
+      position: 'absolute',
       top: 0,
       right: 0,
       bottom: 0,
-      left: 0,
-      borderColor: 'red',
-      borderWidth: 1
+      left: 0
     }
   });
-  module.exports = DummyTab;
-},975,[103,133,111]);
+  var RCTTabBarItem = requireNativeComponent('RCTTabBarItem', TabBarItemIOS);
+  module.exports = TabBarItemIOS;
+},269,[43,205,103,120,249,111,133,135,146]);
 __d(function (global, _require2, module, exports, _dependencyMap) {
   'use strict';
 
@@ -31433,7 +31702,8 @@ __d(function (global, _require2, module, exports, _dependencyMap) {
     children: true
   };
   {
-    AndroidTextInput = requireNativeComponent('AndroidTextInput', null);
+    RCTMultilineTextInputView = requireNativeComponent('RCTMultilineTextInputView', null);
+    RCTSinglelineTextInputView = requireNativeComponent('RCTSinglelineTextInputView', null);
   }
   var DataDetectorTypes = ['phoneNumber', 'link', 'address', 'calendarEvent', 'none', 'all'];
   var TextInput = createReactClass({
@@ -31556,7 +31826,7 @@ __d(function (global, _require2, module, exports, _dependencyMap) {
     },
     render: function render() {
       {
-        return this._renderAndroid();
+        return UIManager.RCTVirtualText ? this._renderIOS() : this._renderIOSLegacy();
       }
     },
     _getText: function _getText() {
@@ -31835,7 +32105,7 @@ __d(function (global, _require2, module, exports, _dependencyMap) {
     }
   });
   module.exports = TextInput;
-},270,[43,271,38,45,958,103,157,120,46,111,166,99,219,220,97,135,145,30,15,146,29]);
+},270,[43,271,38,45,25,103,157,120,46,111,166,99,219,220,97,135,145,30,15,146,29]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -32204,132 +32474,20 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
-  var RCTToastAndroid = _require(_dependencyMap[0]).ToastAndroid;
+  var warning = _require(_dependencyMap[0]);
 
   var ToastAndroid = {
-    SHORT: RCTToastAndroid.SHORT,
-    LONG: RCTToastAndroid.LONG,
-    TOP: RCTToastAndroid.TOP,
-    BOTTOM: RCTToastAndroid.BOTTOM,
-    CENTER: RCTToastAndroid.CENTER,
     show: function show(message, duration) {
-      RCTToastAndroid.show(message, duration);
-    },
-    showWithGravity: function showWithGravity(message, duration, gravity) {
-      RCTToastAndroid.showWithGravity(message, duration, gravity);
-    },
-    showWithGravityAndOffset: function showWithGravityAndOffset(message, duration, gravity, xOffset, yOffset) {
-      RCTToastAndroid.showWithGravityAndOffset(message, duration, gravity, xOffset, yOffset);
+      warning(false, 'ToastAndroid is not supported on this platform.');
     }
   };
   module.exports = ToastAndroid;
-},976,[17]);
+},276,[29]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
-  var Image = _require(_dependencyMap[0]);
-
-  var NativeMethodsMixin = _require(_dependencyMap[1]);
-
-  var React = _require(_dependencyMap[2]);
-
-  var PropTypes = _require(_dependencyMap[3]);
-
-  var ReactNativeViewAttributes = _require(_dependencyMap[4]);
-
-  var UIManager = _require(_dependencyMap[5]);
-
-  var ViewPropTypes = _require(_dependencyMap[6]);
-
-  var ColorPropType = _require(_dependencyMap[7]);
-
-  var createReactClass = _require(_dependencyMap[8]);
-
-  var requireNativeComponent = _require(_dependencyMap[9]);
-
-  var resolveAssetSource = _require(_dependencyMap[10]);
-
-  var optionalImageSource = PropTypes.oneOfType([Image.propTypes.source, PropTypes.oneOf([])]);
-  var ToolbarAndroid = createReactClass({
-    displayName: 'ToolbarAndroid',
-    mixins: [NativeMethodsMixin],
-    propTypes: babelHelpers.extends({}, ViewPropTypes, {
-      actions: PropTypes.arrayOf(PropTypes.shape({
-        title: PropTypes.string.isRequired,
-        icon: optionalImageSource,
-        show: PropTypes.oneOf(['always', 'ifRoom', 'never']),
-        showWithText: PropTypes.bool
-      })),
-      logo: optionalImageSource,
-      navIcon: optionalImageSource,
-      onActionSelected: PropTypes.func,
-      onIconClicked: PropTypes.func,
-      overflowIcon: optionalImageSource,
-      subtitle: PropTypes.string,
-      subtitleColor: ColorPropType,
-      title: PropTypes.string,
-      titleColor: ColorPropType,
-      contentInsetStart: PropTypes.number,
-      contentInsetEnd: PropTypes.number,
-      rtl: PropTypes.bool,
-      testID: PropTypes.string
-    }),
-    render: function render() {
-      var nativeProps = babelHelpers.extends({}, this.props);
-
-      if (this.props.logo) {
-        nativeProps.logo = resolveAssetSource(this.props.logo);
-      }
-
-      if (this.props.navIcon) {
-        nativeProps.navIcon = resolveAssetSource(this.props.navIcon);
-      }
-
-      if (this.props.overflowIcon) {
-        nativeProps.overflowIcon = resolveAssetSource(this.props.overflowIcon);
-      }
-
-      if (this.props.actions) {
-        var nativeActions = [];
-
-        for (var i = 0; i < this.props.actions.length; i++) {
-          var action = babelHelpers.extends({}, this.props.actions[i]);
-
-          if (action.icon) {
-            action.icon = resolveAssetSource(action.icon);
-          }
-
-          if (action.show) {
-            action.show = UIManager.ToolbarAndroid.Constants.ShowAsAction[action.show];
-          }
-
-          nativeActions.push(action);
-        }
-
-        nativeProps.nativeActions = nativeActions;
-      }
-
-      return React.createElement(NativeToolbar, babelHelpers.extends({
-        onSelect: this._onSelect
-      }, nativeProps));
-    },
-    _onSelect: function _onSelect(event) {
-      var position = event.nativeEvent.position;
-
-      if (position === -1) {
-        this.props.onIconClicked && this.props.onIconClicked();
-      } else {
-        this.props.onActionSelected && this.props.onActionSelected(position);
-      }
-    }
-  });
-  var NativeToolbar = requireNativeComponent('ToolbarAndroid', ToolbarAndroid, {
-    nativeOnly: {
-      nativeActions: true
-    }
-  });
-  module.exports = ToolbarAndroid;
-},977,[962,45,103,120,134,97,135,43,157,146,152]);
+  module.exports = _require(_dependencyMap[0]);
+},277,[110]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -32533,133 +32691,20 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     }
   });
   module.exports = TouchableHighlight;
-},278,[43,45,120,958,103,134,111,168,220,133,135,157,221]);
+},278,[43,45,120,25,103,134,111,168,220,133,135,157,221]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  module.exports = _require(_dependencyMap[0]);
+},279,[110]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
   var _class, _temp2;
 
-  var React = _require(_dependencyMap[0]);
+  var ActivityIndicator = _require(_dependencyMap[0]);
 
-  var PropTypes = _require(_dependencyMap[1]);
-
-  var ReactNative = _require(_dependencyMap[2]);
-
-  var UIManager = _require(_dependencyMap[3]);
-
-  var ViewPropTypes = _require(_dependencyMap[4]);
-
-  var dismissKeyboard = _require(_dependencyMap[5]);
-
-  var requireNativeComponent = _require(_dependencyMap[6]);
-
-  var VIEWPAGER_REF = 'viewPager';
-  var ViewPagerAndroid = (_temp2 = _class = function (_React$Component) {
-    babelHelpers.inherits(ViewPagerAndroid, _React$Component);
-
-    function ViewPagerAndroid() {
-      var _ref;
-
-      var _temp, _this, _ret;
-
-      babelHelpers.classCallCheck(this, ViewPagerAndroid);
-
-      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-        args[_key] = arguments[_key];
-      }
-
-      return _ret = (_temp = (_this = babelHelpers.possibleConstructorReturn(this, (_ref = ViewPagerAndroid.__proto__ || Object.getPrototypeOf(ViewPagerAndroid)).call.apply(_ref, [this].concat(args))), _this), _this.getInnerViewNode = function () {
-        return _this.refs[VIEWPAGER_REF].getInnerViewNode();
-      }, _this._childrenWithOverridenStyle = function () {
-        return React.Children.map(_this.props.children, function (child) {
-          if (!child) {
-            return null;
-          }
-
-          var newProps = babelHelpers.extends({}, child.props, {
-            style: [child.props.style, {
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              right: 0,
-              bottom: 0,
-              width: undefined,
-              height: undefined
-            }],
-            collapsable: false
-          });
-
-          if (child.type && child.type.displayName && child.type.displayName !== 'RCTView' && child.type.displayName !== 'View') {
-            console.warn('Each ViewPager child must be a <View>. Was ' + child.type.displayName);
-          }
-
-          return React.createElement(child.type, newProps);
-        });
-      }, _this._onPageScroll = function (e) {
-        if (_this.props.onPageScroll) {
-          _this.props.onPageScroll(e);
-        }
-
-        if (_this.props.keyboardDismissMode === 'on-drag') {
-          dismissKeyboard();
-        }
-      }, _this._onPageScrollStateChanged = function (e) {
-        if (_this.props.onPageScrollStateChanged) {
-          _this.props.onPageScrollStateChanged(e.nativeEvent.pageScrollState);
-        }
-      }, _this._onPageSelected = function (e) {
-        if (_this.props.onPageSelected) {
-          _this.props.onPageSelected(e);
-        }
-      }, _this.setPage = function (selectedPage) {
-        UIManager.dispatchViewManagerCommand(ReactNative.findNodeHandle(_this), UIManager.AndroidViewPager.Commands.setPage, [selectedPage]);
-      }, _this.setPageWithoutAnimation = function (selectedPage) {
-        UIManager.dispatchViewManagerCommand(ReactNative.findNodeHandle(_this), UIManager.AndroidViewPager.Commands.setPageWithoutAnimation, [selectedPage]);
-      }, _temp), babelHelpers.possibleConstructorReturn(_this, _ret);
-    }
-
-    babelHelpers.createClass(ViewPagerAndroid, [{
-      key: "componentDidMount",
-      value: function componentDidMount() {
-        if (this.props.initialPage != null) {
-          this.setPageWithoutAnimation(this.props.initialPage);
-        }
-      }
-    }, {
-      key: "render",
-      value: function render() {
-        return React.createElement(NativeAndroidViewPager, babelHelpers.extends({}, this.props, {
-          ref: VIEWPAGER_REF,
-          style: this.props.style,
-          onPageScroll: this._onPageScroll,
-          onPageScrollStateChanged: this._onPageScrollStateChanged,
-          onPageSelected: this._onPageSelected,
-          children: this._childrenWithOverridenStyle()
-        }));
-      }
-    }]);
-    return ViewPagerAndroid;
-  }(React.Component), _class.propTypes = babelHelpers.extends({}, ViewPropTypes, {
-    initialPage: PropTypes.number,
-    onPageScroll: PropTypes.func,
-    onPageScrollStateChanged: PropTypes.func,
-    onPageSelected: PropTypes.func,
-    pageMargin: PropTypes.number,
-    keyboardDismissMode: PropTypes.oneOf(['none', 'on-drag']),
-    scrollEnabled: PropTypes.bool,
-    peekEnabled: PropTypes.bool
-  }), _temp2);
-  var NativeAndroidViewPager = requireNativeComponent('AndroidViewPager', ViewPagerAndroid);
-  module.exports = ViewPagerAndroid;
-},978,[103,120,46,97,135,213,146]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
-
-  var _class, _temp2;
-
-  var EdgeInsetsPropType = _require(_dependencyMap[0]);
-
-  var ActivityIndicator = _require(_dependencyMap[1]);
+  var EdgeInsetsPropType = _require(_dependencyMap[1]);
 
   var React = _require(_dependencyMap[2]);
 
@@ -32669,26 +32714,47 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
   var StyleSheet = _require(_dependencyMap[5]);
 
-  var UIManager = _require(_dependencyMap[6]);
+  var Text = _require(_dependencyMap[6]);
 
-  var View = _require(_dependencyMap[7]);
+  var UIManager = _require(_dependencyMap[7]);
 
-  var ViewPropTypes = _require(_dependencyMap[8]);
+  var View = _require(_dependencyMap[8]);
 
-  var deprecatedPropType = _require(_dependencyMap[9]);
+  var ViewPropTypes = _require(_dependencyMap[9]);
 
-  var keyMirror = _require(_dependencyMap[10]);
+  var ScrollView = _require(_dependencyMap[10]);
 
-  var requireNativeComponent = _require(_dependencyMap[11]);
+  var deprecatedPropType = _require(_dependencyMap[11]);
 
-  var resolveAssetSource = _require(_dependencyMap[12]);
+  var invariant = _require(_dependencyMap[12]);
 
+  var keyMirror = _require(_dependencyMap[13]);
+
+  var processDecelerationRate = _require(_dependencyMap[14]);
+
+  var requireNativeComponent = _require(_dependencyMap[15]);
+
+  var resolveAssetSource = _require(_dependencyMap[16]);
+
+  var RCTWebViewManager = _require(_dependencyMap[17]).WebViewManager;
+
+  var BGWASH = 'rgba(255,255,255,0.8)';
   var RCT_WEBVIEW_REF = 'webview';
   var WebViewState = keyMirror({
     IDLE: null,
     LOADING: null,
     ERROR: null
   });
+  var NavigationType = keyMirror({
+    click: true,
+    formsubmit: true,
+    backforward: true,
+    reload: true,
+    formresubmit: true,
+    other: true
+  });
+  var JSNavigationScheme = 'react-js-navigation';
+  var DataDetectorTypes = ['phoneNumber', 'link', 'address', 'calendarEvent', 'none', 'all'];
 
   var defaultRenderLoading = function defaultRenderLoading() {
     return React.createElement(
@@ -32696,9 +32762,44 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       {
         style: styles.loadingView
       },
-      React.createElement(ActivityIndicator, {
-        style: styles.loadingProgressBar
-      })
+      React.createElement(ActivityIndicator, null)
+    );
+  };
+
+  var defaultRenderError = function defaultRenderError(errorDomain, errorCode, errorDesc) {
+    return React.createElement(
+      View,
+      {
+        style: styles.errorContainer
+      },
+      React.createElement(
+        Text,
+        {
+          style: styles.errorTextTitle
+        },
+        "Error loading page"
+      ),
+      React.createElement(
+        Text,
+        {
+          style: styles.errorText
+        },
+        'Domain: ' + errorDomain
+      ),
+      React.createElement(
+        Text,
+        {
+          style: styles.errorText
+        },
+        'Error Code: ' + errorCode
+      ),
+      React.createElement(
+        Text,
+        {
+          style: styles.errorText
+        },
+        'Description: ' + errorDesc
+      )
     );
   };
 
@@ -32736,18 +32837,18 @@ __d(function (global, _require, module, exports, _dependencyMap) {
         UIManager.dispatchViewManagerCommand(_this.getWebViewHandle(), UIManager.RCTWebView.Commands.postMessage, [String(data)]);
       }, _this.injectJavaScript = function (data) {
         UIManager.dispatchViewManagerCommand(_this.getWebViewHandle(), UIManager.RCTWebView.Commands.injectJavaScript, [data]);
-      }, _this.updateNavigationState = function (event) {
+      }, _this._updateNavigationState = function (event) {
         if (_this.props.onNavigationStateChange) {
           _this.props.onNavigationStateChange(event.nativeEvent);
         }
       }, _this.getWebViewHandle = function () {
         return ReactNative.findNodeHandle(_this.refs[RCT_WEBVIEW_REF]);
-      }, _this.onLoadingStart = function (event) {
+      }, _this._onLoadingStart = function (event) {
         var onLoadStart = _this.props.onLoadStart;
         onLoadStart && onLoadStart(event);
 
-        _this.updateNavigationState(event);
-      }, _this.onLoadingError = function (event) {
+        _this._updateNavigationState(event);
+      }, _this._onLoadingError = function (event) {
         event.persist();
         var _this$props = _this.props,
             onError = _this$props.onError,
@@ -32760,7 +32861,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
           lastErrorEvent: event.nativeEvent,
           viewState: WebViewState.ERROR
         });
-      }, _this.onLoadingFinish = function (event) {
+      }, _this._onLoadingFinish = function (event) {
         var _this$props2 = _this.props,
             onLoad = _this$props2.onLoad,
             onLoadEnd = _this$props2.onLoadEnd;
@@ -32771,8 +32872,8 @@ __d(function (global, _require, module, exports, _dependencyMap) {
           viewState: WebViewState.IDLE
         });
 
-        _this.updateNavigationState(event);
-      }, _this.onMessage = function (event) {
+        _this._updateNavigationState(event);
+      }, _this._onMessage = function (event) {
         var onMessage = _this.props.onMessage;
         onMessage && onMessage(event);
       }, _temp), babelHelpers.possibleConstructorReturn(_this, _ret);
@@ -32790,23 +32891,36 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     }, {
       key: "render",
       value: function render() {
+        var _this2 = this;
+
         var otherView = null;
 
         if (this.state.viewState === WebViewState.LOADING) {
           otherView = (this.props.renderLoading || defaultRenderLoading)();
         } else if (this.state.viewState === WebViewState.ERROR) {
           var errorEvent = this.state.lastErrorEvent;
-          otherView = this.props.renderError && this.props.renderError(errorEvent.domain, errorEvent.code, errorEvent.description);
+          invariant(errorEvent != null, 'lastErrorEvent expected to be non-null');
+          otherView = (this.props.renderError || defaultRenderError)(errorEvent.domain, errorEvent.code, errorEvent.description);
         } else if (this.state.viewState !== WebViewState.IDLE) {
           console.error('RCTWebView invalid state encountered: ' + this.state.loading);
         }
 
-        var webViewStyles = [styles.container, this.props.style];
+        var webViewStyles = [styles.container, styles.webView, this.props.style];
 
         if (this.state.viewState === WebViewState.LOADING || this.state.viewState === WebViewState.ERROR) {
           webViewStyles.push(styles.hidden);
         }
 
+        var nativeConfig = this.props.nativeConfig || {};
+        var viewManager = nativeConfig.viewManager || RCTWebViewManager;
+
+        var onShouldStartLoadWithRequest = this.props.onShouldStartLoadWithRequest && function (event) {
+          var shouldStart = _this2.props.onShouldStartLoadWithRequest && _this2.props.onShouldStartLoadWithRequest(event.nativeEvent);
+
+          viewManager.startLoadWithResult(!!shouldStart, event.nativeEvent.lockIdentifier);
+        };
+
+        var decelerationRate = processDecelerationRate(this.props.decelerationRate);
         var source = this.props.source || {};
 
         if (this.props.html) {
@@ -32815,39 +32929,29 @@ __d(function (global, _require, module, exports, _dependencyMap) {
           source.uri = this.props.url;
         }
 
-        if (source.method === 'POST' && source.headers) {
-          console.warn('WebView: `source.headers` is not supported when using POST.');
-        } else if (source.method === 'GET' && source.body) {
-          console.warn('WebView: `source.body` is not supported when using GET.');
-        }
-
-        var nativeConfig = this.props.nativeConfig || {};
+        var messagingEnabled = typeof this.props.onMessage === 'function';
         var NativeWebView = nativeConfig.component || RCTWebView;
         var webView = React.createElement(NativeWebView, babelHelpers.extends({
           ref: RCT_WEBVIEW_REF,
           key: "webViewKey",
           style: webViewStyles,
           source: resolveAssetSource(source),
-          scalesPageToFit: this.props.scalesPageToFit,
           injectedJavaScript: this.props.injectedJavaScript,
-          userAgent: this.props.userAgent,
-          javaScriptEnabled: this.props.javaScriptEnabled,
-          thirdPartyCookiesEnabled: this.props.thirdPartyCookiesEnabled,
-          domStorageEnabled: this.props.domStorageEnabled,
-          messagingEnabled: typeof this.props.onMessage === 'function',
-          onMessage: this.onMessage,
+          bounces: this.props.bounces,
+          scrollEnabled: this.props.scrollEnabled,
+          decelerationRate: decelerationRate,
           contentInset: this.props.contentInset,
           automaticallyAdjustContentInsets: this.props.automaticallyAdjustContentInsets,
-          onContentSizeChange: this.props.onContentSizeChange,
-          onLoadingStart: this.onLoadingStart,
-          onLoadingFinish: this.onLoadingFinish,
-          onLoadingError: this.onLoadingError,
-          testID: this.props.testID,
+          onLoadingStart: this._onLoadingStart,
+          onLoadingFinish: this._onLoadingFinish,
+          onLoadingError: this._onLoadingError,
+          messagingEnabled: messagingEnabled,
+          onMessage: this._onMessage,
+          onShouldStartLoadWithRequest: onShouldStartLoadWithRequest,
+          scalesPageToFit: this.props.scalesPageToFit,
+          allowsInlineMediaPlayback: this.props.allowsInlineMediaPlayback,
           mediaPlaybackRequiresUserAction: this.props.mediaPlaybackRequiresUserAction,
-          allowUniversalAccessFromFileURLs: this.props.allowUniversalAccessFromFileURLs,
-          mixedContentMode: this.props.mixedContentMode,
-          saveFormDataDisabled: this.props.saveFormDataDisabled,
-          urlPrefixesForDefaultIntent: this.props.urlPrefixesForDefaultIntent
+          dataDetectorTypes: this.props.dataDetectorTypes
         }, nativeConfig.props));
         return React.createElement(
           View,
@@ -32863,81 +32967,101 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       get: function get() {
         return {
           nativeOnly: {
+            onLoadingStart: true,
+            onLoadingError: true,
+            onLoadingFinish: true,
+            onMessage: true,
             messagingEnabled: PropTypes.bool
           }
         };
       }
     }]);
     return WebView;
-  }(React.Component), _class.propTypes = babelHelpers.extends({}, ViewPropTypes, {
-    renderError: PropTypes.func,
-    renderLoading: PropTypes.func,
-    onLoad: PropTypes.func,
-    onLoadEnd: PropTypes.func,
-    onLoadStart: PropTypes.func,
-    onError: PropTypes.func,
-    automaticallyAdjustContentInsets: PropTypes.bool,
-    contentInset: EdgeInsetsPropType,
-    onNavigationStateChange: PropTypes.func,
-    onMessage: PropTypes.func,
-    onContentSizeChange: PropTypes.func,
-    startInLoadingState: PropTypes.bool,
-    style: ViewPropTypes.style,
+  }(React.Component), _class.JSNavigationScheme = JSNavigationScheme, _class.NavigationType = NavigationType, _class.propTypes = babelHelpers.extends({}, ViewPropTypes, {
     html: deprecatedPropType(PropTypes.string, 'Use the `source` prop instead.'),
     url: deprecatedPropType(PropTypes.string, 'Use the `source` prop instead.'),
     source: PropTypes.oneOfType([PropTypes.shape({
       uri: PropTypes.string,
-      method: PropTypes.oneOf(['GET', 'POST']),
+      method: PropTypes.string,
       headers: PropTypes.object,
       body: PropTypes.string
     }), PropTypes.shape({
       html: PropTypes.string,
       baseUrl: PropTypes.string
     }), PropTypes.number]),
+    renderError: PropTypes.func,
+    renderLoading: PropTypes.func,
+    onLoad: PropTypes.func,
+    onLoadEnd: PropTypes.func,
+    onLoadStart: PropTypes.func,
+    onError: PropTypes.func,
+    bounces: PropTypes.bool,
+    decelerationRate: ScrollView.propTypes.decelerationRate,
+    scrollEnabled: PropTypes.bool,
+    automaticallyAdjustContentInsets: PropTypes.bool,
+    contentInset: EdgeInsetsPropType,
+    onNavigationStateChange: PropTypes.func,
+    onMessage: PropTypes.func,
+    startInLoadingState: PropTypes.bool,
+    style: ViewPropTypes.style,
+    dataDetectorTypes: PropTypes.oneOfType([PropTypes.oneOf(DataDetectorTypes), PropTypes.arrayOf(PropTypes.oneOf(DataDetectorTypes))]),
     javaScriptEnabled: PropTypes.bool,
     thirdPartyCookiesEnabled: PropTypes.bool,
     domStorageEnabled: PropTypes.bool,
     injectedJavaScript: PropTypes.string,
-    scalesPageToFit: PropTypes.bool,
     userAgent: PropTypes.string,
-    testID: PropTypes.string,
+    scalesPageToFit: PropTypes.bool,
+    onShouldStartLoadWithRequest: PropTypes.func,
+    allowsInlineMediaPlayback: PropTypes.bool,
     mediaPlaybackRequiresUserAction: PropTypes.bool,
-    allowUniversalAccessFromFileURLs: PropTypes.bool,
     injectJavaScript: PropTypes.func,
     mixedContentMode: PropTypes.oneOf(['never', 'always', 'compatibility']),
-    saveFormDataDisabled: PropTypes.bool,
     nativeConfig: PropTypes.shape({
       component: PropTypes.any,
       props: PropTypes.object,
       viewManager: PropTypes.object
-    }),
-    urlPrefixesForDefaultIntent: PropTypes.arrayOf(PropTypes.string)
+    })
   }), _class.defaultProps = {
-    javaScriptEnabled: true,
-    thirdPartyCookiesEnabled: true,
-    scalesPageToFit: true,
-    saveFormDataDisabled: false
+    scalesPageToFit: true
   }, _temp2);
   var RCTWebView = requireNativeComponent('RCTWebView', WebView, WebView.extraNativeComponentConfig);
   var styles = StyleSheet.create({
     container: {
       flex: 1
     },
+    errorContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: BGWASH
+    },
+    errorText: {
+      fontSize: 14,
+      textAlign: 'center',
+      marginBottom: 2
+    },
+    errorTextTitle: {
+      fontSize: 15,
+      fontWeight: '500',
+      marginBottom: 10
+    },
     hidden: {
       height: 0,
       flex: 0
     },
     loadingView: {
+      backgroundColor: BGWASH,
       flex: 1,
       justifyContent: 'center',
-      alignItems: 'center'
+      alignItems: 'center',
+      height: 100
     },
-    loadingProgressBar: {
-      height: 20
+    webView: {
+      backgroundColor: '#ffffff'
     }
   });
   module.exports = WebView;
-},979,[136,42,103,120,46,111,97,133,135,125,118,146,152]);
+},280,[42,136,103,120,46,111,166,97,133,135,207,125,15,118,218,146,152,17]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -33309,52 +33433,70 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   }
 
   module.exports = renderApplication;
-},286,[246,103,46,15,980]);
+},286,[246,103,46,15,287]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
-  var DeviceEventManager = _require(_dependencyMap[0]).DeviceEventManager;
+  var Platform = _require(_dependencyMap[0]);
 
-  var RCTDeviceEventEmitter = _require(_dependencyMap[1]);
+  var TVEventHandler = _require(_dependencyMap[1]);
 
-  var DEVICE_BACK_EVENT = 'hardwareBackPress';
+  function emptyFunction() {}
 
-  var _backPressSubscriptions = new Set();
+  var BackHandler = void 0;
 
-  RCTDeviceEventEmitter.addListener(DEVICE_BACK_EVENT, function () {
-    var invokeDefault = true;
-    var subscriptions = Array.from(_backPressSubscriptions.values()).reverse();
+  if (Platform.isTVOS) {
+    var _tvEventHandler = new TVEventHandler();
 
-    for (var i = 0; i < subscriptions.length; ++i) {
-      if (subscriptions[i]()) {
-        invokeDefault = false;
-        break;
-      }
-    }
+    var _backPressSubscriptions = new Set();
 
-    if (invokeDefault) {
-      BackHandler.exitApp();
-    }
-  });
-  var BackHandler = {
-    exitApp: function exitApp() {
-      DeviceEventManager.invokeDefaultBackPressHandler();
-    },
-    addEventListener: function addEventListener(eventName, handler) {
-      _backPressSubscriptions.add(handler);
+    _tvEventHandler.enable(this, function (cmp, evt) {
+      if (evt && evt.eventType === 'menu') {
+        var invokeDefault = true;
+        var subscriptions = Array.from(_backPressSubscriptions.values()).reverse();
 
-      return {
-        remove: function remove() {
-          return BackHandler.removeEventListener(eventName, handler);
+        for (var i = 0; i < subscriptions.length; ++i) {
+          if (subscriptions[i]()) {
+            invokeDefault = false;
+            break;
+          }
         }
-      };
-    },
-    removeEventListener: function removeEventListener(eventName, handler) {
-      _backPressSubscriptions.delete(handler);
-    }
-  };
+
+        if (invokeDefault) {
+          BackHandler.exitApp();
+        }
+      }
+    });
+
+    BackHandler = {
+      exitApp: emptyFunction,
+      addEventListener: function addEventListener(eventName, handler) {
+        _backPressSubscriptions.add(handler);
+
+        return {
+          remove: function remove() {
+            return BackHandler.removeEventListener(eventName, handler);
+          }
+        };
+      },
+      removeEventListener: function removeEventListener(eventName, handler) {
+        _backPressSubscriptions.delete(handler);
+      }
+    };
+  } else {
+    BackHandler = {
+      exitApp: emptyFunction,
+      addEventListener: function addEventListener() {
+        return {
+          remove: emptyFunction
+        };
+      },
+      removeEventListener: emptyFunction
+    };
+  }
+
   module.exports = BackHandler;
-},980,[17,37]);
+},287,[25,172]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -33681,7 +33823,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     }
   };
   module.exports = BackAndroid;
-},290,[980,29]);
+},290,[287,29]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -33814,64 +33956,26 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
-  var DatePickerModule = _require(_dependencyMap[0]).DatePickerAndroid;
+  var DatePickerAndroid = {
+    open: function open(options) {
+      return regeneratorRuntime.async(function open$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              return _context.abrupt("return", Promise.reject({
+                message: 'DatePickerAndroid is not supported on this platform.'
+              }));
 
-  function _toMillis(options, key) {
-    var dateVal = options[key];
-
-    if (typeof dateVal === 'object' && typeof dateVal.getMonth === 'function') {
-      options[key] = dateVal.getTime();
-    }
-  }
-
-  var DatePickerAndroid = function () {
-    function DatePickerAndroid() {
-      babelHelpers.classCallCheck(this, DatePickerAndroid);
-    }
-
-    babelHelpers.createClass(DatePickerAndroid, null, [{
-      key: "open",
-      value: function open(options) {
-        var optionsMs;
-        return regeneratorRuntime.async(function open$(_context) {
-          while (1) {
-            switch (_context.prev = _context.next) {
-              case 0:
-                optionsMs = options;
-
-                if (optionsMs) {
-                  _toMillis(options, 'date');
-
-                  _toMillis(options, 'minDate');
-
-                  _toMillis(options, 'maxDate');
-                }
-
-                return _context.abrupt("return", DatePickerModule.open(options));
-
-              case 3:
-              case "end":
-                return _context.stop();
-            }
+            case 1:
+            case "end":
+              return _context.stop();
           }
-        }, null, this);
-      }
-    }, {
-      key: "dateSetAction",
-      get: function get() {
-        return 'dateSetAction';
-      }
-    }, {
-      key: "dismissedAction",
-      get: function get() {
-        return 'dismissedAction';
-      }
-    }]);
-    return DatePickerAndroid;
-  }();
-
+        }
+      }, null, this);
+    }
+  };
   module.exports = DatePickerAndroid;
-},981,[17]);
+},293,[]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -33911,7 +34015,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
   var invariant = _require(_dependencyMap[3]);
 
-  var LinkingManager = NativeModules.IntentAndroid;
+  var LinkingManager = NativeModules.LinkingManager;
 
   var Linking = function (_NativeEventEmitter) {
     babelHelpers.inherits(Linking, _NativeEventEmitter);
@@ -33961,7 +34065,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   }(NativeEventEmitter);
 
   module.exports = new Linking();
-},295,[70,17,958,15]);
+},295,[70,17,25,15]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -33982,8 +34086,8 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   var _isConnectedDeprecated = void 0;
 
   {
-    _isConnectedDeprecated = function _isConnectedDeprecated(connectionType) {
-      return connectionType !== 'NONE' && connectionType !== 'UNKNOWN';
+    _isConnectedDeprecated = function _isConnectedDeprecated(reachability) {
+      return reachability !== 'none' && reachability !== 'unknown';
     };
   }
 
@@ -34080,11 +34184,11 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       }
     },
     isConnectionExpensive: function isConnectionExpensive() {
-      return RCTNetInfo.isConnectionMetered();
+      return Promise.reject(new Error('Currently not supported on iOS'));
     }
   };
   module.exports = NetInfo;
-},296,[51,70,17,958]);
+},296,[51,70,17,25]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -34335,24 +34439,64 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
+  var RCTDeviceEventEmitter = _require(_dependencyMap[0]);
+
+  var RCTSettingsManager = _require(_dependencyMap[1]).SettingsManager;
+
+  var invariant = _require(_dependencyMap[2]);
+
+  var subscriptions = [];
   var Settings = {
+    _settings: RCTSettingsManager && RCTSettingsManager.settings,
     get: function get(key) {
-      console.warn('Settings is not yet supported on Android');
-      return null;
+      return this._settings[key];
     },
     set: function set(settings) {
-      console.warn('Settings is not yet supported on Android');
+      this._settings = babelHelpers.extends(this._settings, settings);
+      RCTSettingsManager.setValues(settings);
     },
     watchKeys: function watchKeys(keys, callback) {
-      console.warn('Settings is not yet supported on Android');
-      return -1;
+      if (typeof keys === 'string') {
+        keys = [keys];
+      }
+
+      invariant(Array.isArray(keys), 'keys should be a string or array of strings');
+      var sid = subscriptions.length;
+      subscriptions.push({
+        keys: keys,
+        callback: callback
+      });
+      return sid;
     },
     clearWatch: function clearWatch(watchId) {
-      console.warn('Settings is not yet supported on Android');
+      if (watchId < subscriptions.length) {
+        subscriptions[watchId] = {
+          keys: [],
+          callback: null
+        };
+      }
+    },
+    _sendObservations: function _sendObservations(body) {
+      var _this = this;
+
+      Object.keys(body).forEach(function (key) {
+        var newValue = body[key];
+        var didChange = _this._settings[key] !== newValue;
+        _this._settings[key] = newValue;
+
+        if (didChange) {
+          subscriptions.forEach(function (sub) {
+            if (sub.keys.indexOf(key) !== -1 && sub.callback) {
+              sub.callback();
+            }
+          });
+        }
+      });
     }
   };
+  RCTDeviceEventEmitter.addListener('settingsUpdated', Settings._sendObservations.bind(Settings));
   module.exports = Settings;
-},982,[]);
+},298,[37,17,15]);
 __d(function (global, _require2, module, exports, _dependencyMap) {
   'use strict';
 
@@ -34379,8 +34523,24 @@ __d(function (global, _require2, module, exports, _dependencyMap) {
         invariant(typeof content.url === 'string' || typeof content.message === 'string', 'At least one of URL and message is required');
         invariant(typeof options === 'object' && options !== null, 'Options must be a valid object');
         {
-          invariant(!content.title || typeof content.title === 'string', 'Invalid title: title should be a string.');
-          return ShareModule.share(content, options.dialogTitle);
+          return new Promise(function (resolve, reject) {
+            ActionSheetManager.showShareActionSheetWithOptions(babelHelpers.extends({}, content, options, {
+              tintColor: processColor(options.tintColor)
+            }), function (error) {
+              return reject(error);
+            }, function (success, activityType) {
+              if (success) {
+                resolve({
+                  'action': 'sharedAction',
+                  'activityType': activityType
+                });
+              } else {
+                resolve({
+                  'action': 'dismissedAction'
+                });
+              }
+            });
+          });
         }
       }
     }, {
@@ -34398,56 +34558,51 @@ __d(function (global, _require2, module, exports, _dependencyMap) {
   }();
 
   module.exports = Share;
-},299,[958,15,128,17]);
-__d(function (global, _require, module, exports, _dependencyMap) {
+},299,[25,15,128,17]);
+__d(function (global, _require2, module, exports, _dependencyMap) {
   'use strict';
 
-  var NativeEventEmitter = _require(_dependencyMap[0]);
+  var NativeEventEmitter = _require2(_dependencyMap[0]);
 
-  module.exports = new NativeEventEmitter('StatusBarManager');
-},983,[70]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  'use strict';
+  var _require = _require2(_dependencyMap[1]),
+      StatusBarManager = _require.StatusBarManager;
 
-  var TimePickerModule = _require(_dependencyMap[0]).TimePickerAndroid;
+  var StatusBarIOS = function (_NativeEventEmitter) {
+    babelHelpers.inherits(StatusBarIOS, _NativeEventEmitter);
 
-  var TimePickerAndroid = function () {
-    function TimePickerAndroid() {
-      babelHelpers.classCallCheck(this, TimePickerAndroid);
+    function StatusBarIOS() {
+      babelHelpers.classCallCheck(this, StatusBarIOS);
+      return babelHelpers.possibleConstructorReturn(this, (StatusBarIOS.__proto__ || Object.getPrototypeOf(StatusBarIOS)).apply(this, arguments));
     }
 
-    babelHelpers.createClass(TimePickerAndroid, null, [{
-      key: "open",
-      value: function open(options) {
-        return regeneratorRuntime.async(function open$(_context) {
-          while (1) {
-            switch (_context.prev = _context.next) {
-              case 0:
-                return _context.abrupt("return", TimePickerModule.open(options));
+    return StatusBarIOS;
+  }(NativeEventEmitter);
 
-              case 1:
-              case "end":
-                return _context.stop();
-            }
+  module.exports = new StatusBarIOS(StatusBarManager);
+},300,[70,17]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var TimePickerAndroid = {
+    open: function open(options) {
+      return regeneratorRuntime.async(function open$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              return _context.abrupt("return", Promise.reject({
+                message: 'TimePickerAndroid is not supported on this platform.'
+              }));
+
+            case 1:
+            case "end":
+              return _context.stop();
           }
-        }, null, this);
-      }
-    }, {
-      key: "timeSetAction",
-      get: function get() {
-        return 'timeSetAction';
-      }
-    }, {
-      key: "dismissedAction",
-      get: function get() {
-        return 'dismissedAction';
-      }
-    }]);
-    return TimePickerAndroid;
-  }();
-
+        }
+      }, null, this);
+    }
+  };
   module.exports = TimePickerAndroid;
-},984,[17]);
+},301,[]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -34508,10 +34663,14 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       var pattern = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 400;
       var repeat = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
       {
+        if (_vibrating) {
+          return;
+        }
+
         if (typeof pattern === 'number') {
-          RCTVibration.vibrate(pattern);
+          RCTVibration.vibrate();
         } else if (Array.isArray(pattern)) {
-          RCTVibration.vibrateByPattern(pattern, repeat ? 0 : -1);
+          vibrateByPattern(pattern, repeat);
         } else {
           throw new Error('Vibration pattern should be a number or array');
         }
@@ -34519,24 +34678,27 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     },
     cancel: function cancel() {
       {
-        RCTVibration.cancel();
+        _vibrating = false;
       }
     }
   };
   module.exports = Vibration;
-},302,[17,958]);
+},302,[17,25]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
-  var warning = _require(_dependencyMap[0]);
+  var RCTVibration = _require(_dependencyMap[0]).Vibration;
+
+  var invariant = _require(_dependencyMap[1]);
 
   var VibrationIOS = {
     vibrate: function vibrate() {
-      warning('VibrationIOS is not supported on this platform!');
+      invariant(arguments[0] === undefined, 'Vibration patterns not supported.');
+      RCTVibration.vibrate();
     }
   };
   module.exports = VibrationIOS;
-},985,[29]);
+},303,[17,15]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -35054,7 +35216,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   var textColor = 'white';
   var rowGutter = 1;
   var rowHeight = 46;
-  var elevation = Number.MAX_SAFE_INTEGER;
+  var elevation = undefined;
   var styles = StyleSheet.create({
     fullScreen: {
       height: '100%',
@@ -35134,13 +35296,13 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       color: textColor,
       position: 'absolute',
       left: 0,
-      top: 5,
+      top: 7,
       marginLeft: 15,
       marginRight: 15
     }
   });
   module.exports = YellowBox;
-},304,[38,958,103,971,111,92,95,305,57,23,307,166,278,133,207]);
+},304,[38,25,103,254,111,92,95,305,57,23,307,166,278,133,207]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -35327,7 +35489,7 @@ __d(function (global, _require2, module, exports, _dependencyMap) {
 
   module.exports = {
     Platform: {
-      OS: "android"
+      OS: "ios"
     },
     NativeModulesProxy: NativeModulesProxy,
     EventEmitter: EventEmitter,
@@ -35424,13 +35586,6 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       key: "addListener",
       value: function addListener(eventName, listener) {
         this._listenersCount += 1;
-
-        if (this._nativeModule.startObserving) {
-          if (this._listenersCount === 1) {
-            this._nativeModule.startObserving();
-          }
-        }
-
         return this._eventEmitter.addListener(eventName, listener);
       }
     }, {
@@ -35440,10 +35595,6 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
         var newListenersCount = Math.max(0, this._listenersCount - listenersToRemoveCount);
 
-        if (this._nativeModule.stopObserving && newListenersCount === 0) {
-          this._nativeModule.stopObserving();
-        }
-
         this._eventEmitter.removeAllListeners(eventName);
 
         this._listenersCount = newListenersCount;
@@ -35452,12 +35603,6 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       key: "removeSubscription",
       value: function removeSubscription(subscription) {
         this._listenersCount -= 1;
-
-        if (this._nativeModule.stopObserving) {
-          if (this._listenersCount === 0) {
-            this._nativeModule.stopObserving();
-          }
-        }
 
         this._eventEmitter.removeSubscription(subscription);
       }
@@ -41665,14 +41810,6 @@ __d(function (global, _require, module, exports, _dependencyMap) {
         switch (_context5.prev = _context5.next) {
           case 0:
             return _context5.abrupt("return", Location.geocodeAsync(address).catch(function (error) {
-              if (error.code === 'E_NO_GEOCODER') {
-                if (!googleApiKey) {
-                  throw new Error(error.message + ' Please set a Google API Key to use geocoding.');
-                }
-
-                return _googleGeocodeAsync(address);
-              }
-
               throw error;
             }));
 
@@ -41698,14 +41835,6 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
           case 2:
             return _context6.abrupt("return", Location.reverseGeocodeAsync(location).catch(function (error) {
-              if (error.code === 'E_NO_GEOCODER') {
-                if (!googleApiKey) {
-                  throw new Error(error.message + ' Please set a Google API Key to use geocoding.');
-                }
-
-                return _googleReverseGeocodeAsync(location);
-              }
-
               throw error;
             }));
 
@@ -42022,7 +42151,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     });
     var hash = meta.fileHashes ? meta.fileHashes[index] || meta.fileHashes[0] : meta.hash;
     var uri = meta.fileUris ? meta.fileUris[index] || meta.fileUris[0] : meta.uri;
-    var suffix = '/' + meta.name + (scale === 1 ? '' : '@' + scale + 'x') + '.' + meta.type + '?platform=' + "android" + '&hash=' + meta.hash;
+    var suffix = '/' + meta.name + (scale === 1 ? '' : '@' + scale + 'x') + '.' + meta.type + '?platform=' + "ios" + '&hash=' + meta.hash;
 
     if (uri) {
       return {
@@ -43022,13 +43151,13 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     }
 
     {
-      if (notification.ios) {
-        delete notification.ios;
+      if (notification.android) {
+        delete notification.android;
       }
 
-      if (notification.android) {
-        notification = babelHelpers.extends(notification, notification.android);
-        delete notification.android;
+      if (notification.ios) {
+        notification = babelHelpers.extends(notification, notification.ios);
+        delete notification.ios;
       }
     }
     return notification;
@@ -43036,7 +43165,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
   function _validateNotification(notification) {
     {
-      (0, _invariant2.default)(!!notification.title, 'Local notifications on Android require a title');
+      (0, _invariant2.default)(!!notification.title && !!notification.body, 'Local notifications on iOS require both a title and a body');
     }
   }
 
@@ -43086,54 +43215,6 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     return _reactNative.AsyncStorage.removeItem("" + ASYNC_STORAGE_PREFIX + id);
   }
 
-  {
-    _reactNative.AsyncStorage.clear = function _callee(callback) {
-      var keys, result, filteredKeys;
-      return regeneratorRuntime.async(function _callee$(_context2) {
-        while (1) {
-          switch (_context2.prev = _context2.next) {
-            case 0:
-              _context2.prev = 0;
-              _context2.next = 3;
-              return regeneratorRuntime.awrap(_reactNative.AsyncStorage.getAllKeys());
-
-            case 3:
-              keys = _context2.sent;
-              result = null;
-
-              if (!(keys && keys.length)) {
-                _context2.next = 10;
-                break;
-              }
-
-              filteredKeys = keys.filter(function (key) {
-                return !key.startsWith(ASYNC_STORAGE_PREFIX);
-              });
-              _context2.next = 9;
-              return regeneratorRuntime.awrap(_reactNative.AsyncStorage.multiRemove(filteredKeys));
-
-            case 9:
-              result = _context2.sent;
-
-            case 10:
-              callback && callback(result);
-              return _context2.abrupt("return", result);
-
-            case 14:
-              _context2.prev = 14;
-              _context2.t0 = _context2["catch"](0);
-              callback && callback(_context2.t0);
-              throw _context2.t0;
-
-            case 18:
-            case "end":
-              return _context2.stop();
-          }
-        }
-      }, null, this, [[0, 14]]);
-    };
-  }
-
   function _legacySaveChannel(id, channel) {
     return _reactNative.AsyncStorage.setItem("" + ASYNC_STORAGE_PREFIX + id, JSON.stringify(channel));
   }
@@ -43149,6 +43230,11 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       return ExponentNotifications.getDevicePushTokenAsync(config || {});
     },
     createChannelAndroidAsync: function createChannelAndroidAsync(id, channel) {
+      {
+        console.warn('createChannelAndroidAsync(...) has no effect on iOS');
+        return Promise.resolve();
+      }
+
       if (!IS_USING_NEW_BINARY) {
         return _legacySaveChannel(id, channel);
       }
@@ -43156,6 +43242,11 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       return ExponentNotifications.createChannel(id, channel);
     },
     deleteChannelAndroidAsync: function deleteChannelAndroidAsync(id) {
+      {
+        console.warn('deleteChannelAndroidAsync(...) has no effect on iOS');
+        return Promise.resolve();
+      }
+
       if (!IS_USING_NEW_BINARY) {
         return Promise.resolve();
       }
@@ -43163,8 +43254,6 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       return ExponentNotifications.deleteChannel(id);
     },
     presentLocalNotificationAsync: function presentLocalNotificationAsync(notification) {
-      var _channel;
-
       return regeneratorRuntime.async(function presentLocalNotificationAsync$(_context3) {
         while (1) {
           switch (_context3.prev = _context3.next) {
@@ -43172,39 +43261,9 @@ __d(function (global, _require, module, exports, _dependencyMap) {
               _validateNotification(notification);
 
               notification = _processNotification(notification);
-              _channel = void 0;
-
-              if (!notification.channelId) {
-                _context3.next = 7;
-                break;
-              }
-
-              _context3.next = 6;
-              return regeneratorRuntime.awrap(_legacyReadChannel(notification.channelId));
-
-            case 6:
-              _channel = _context3.sent;
-
-            case 7:
-              if (!IS_USING_NEW_BINARY) {
-                _context3.next = 12;
-                break;
-              }
-
-              _legacyDeleteChannel(notification.channelId);
-
-              return _context3.abrupt("return", ExponentNotifications.presentLocalNotificationWithChannel(notification, _channel));
-
-            case 12:
-              if (_channel) {
-                notification.sound = _channel.sound;
-                notification.priority = _channel.priority;
-                notification.vibrate = _channel.vibrate;
-              }
-
               return _context3.abrupt("return", ExponentNotifications.presentLocalNotification(notification));
 
-            case 14:
+            case 3:
             case "end":
               return _context3.stop();
           }
@@ -43213,9 +43272,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     },
     scheduleLocalNotificationAsync: function scheduleLocalNotificationAsync(notification) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
-      var now, timeAsDateObj, validOptions, _channel;
-
+      var now, timeAsDateObj, validOptions;
       return regeneratorRuntime.async(function scheduleLocalNotificationAsync$(_context4) {
         while (1) {
           switch (_context4.prev = _context4.next) {
@@ -43253,7 +43310,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
             case 8:
               (0, _warning2.default)(timeAsDateObj >= now, "Provided value for \"time\" is before the current date. Did you possibly pass number of seconds since Unix Epoch instead of number of milliseconds?");
               options = babelHelpers.extends({}, options, {
-                time: timeAsDateObj
+                time: timeAsDateObj.getTime()
               });
 
             case 10:
@@ -43281,51 +43338,16 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
             case 16:
               if (!(options.intervalMs != null)) {
-                _context4.next = 19;
+                _context4.next = 20;
                 break;
               }
 
-              if (!(options.intervalMs <= 0 || !Number.isInteger(options.intervalMs))) {
-                _context4.next = 19;
-                break;
-              }
+              throw new Error("The \"intervalMs\" option is not supported on iOS");
 
-              throw new Error("Pass an integer greater than zero as the value for the \"intervalMs\" option");
-
-            case 19:
-              _channel = void 0;
-
-              if (!notification.channelId) {
-                _context4.next = 24;
-                break;
-              }
-
-              _context4.next = 23;
-              return regeneratorRuntime.awrap(_legacyReadChannel(notification.channelId));
-
-            case 23:
-              _channel = _context4.sent;
-
-            case 24:
-              if (!IS_USING_NEW_BINARY) {
-                _context4.next = 29;
-                break;
-              }
-
-              _legacyDeleteChannel(notification.channelId);
-
-              return _context4.abrupt("return", ExponentNotifications.scheduleLocalNotificationWithChannel(notification, options, _channel));
-
-            case 29:
-              if (_channel) {
-                notification.sound = _channel.sound;
-                notification.priority = _channel.priority;
-                notification.vibrate = _channel.vibrate;
-              }
-
+            case 20:
               return _context4.abrupt("return", ExponentNotifications.scheduleLocalNotification(notification, options));
 
-            case 31:
+            case 21:
             case "end":
               return _context4.stop();
           }
@@ -43337,7 +43359,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
         while (1) {
           switch (_context5.prev = _context5.next) {
             case 0:
-              return _context5.abrupt("return", ExponentNotifications.dismissNotification(notificationId));
+              throw new Error('Dismissing notifications is not supported on iOS');
 
             case 1:
             case "end":
@@ -43351,7 +43373,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
         while (1) {
           switch (_context6.prev = _context6.next) {
             case 0:
-              return _context6.abrupt("return", ExponentNotifications.dismissAllNotifications());
+              throw new Error('Dismissing notifications is not supported on iOS');
 
             case 1:
             case "end":
@@ -45075,9 +45097,6 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   }
 
   function _authSessionIsNativelySupported() {
-    {
-      return false;
-    }
     var versionNumber = parseInt(_reactNative.Platform.Version, 10);
     return versionNumber >= 11;
   }
@@ -45229,9 +45248,11 @@ __d(function (global, _require, module, exports, _dependencyMap) {
             ref: this._setNativeRef,
             style: babelHelpers.extends({
               flex: 1
-            }, {}),
+            }, {
+              backgroundColor: 'transparent'
+            }),
             onSurfaceCreate: this._onSurfaceCreate,
-            msaaSamples: undefined
+            msaaSamples: msaaSamples
           })
         );
       }
@@ -45561,7 +45582,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
         var ret = orig.call(gl, pname);
 
         if (pname === gl.VERSION) {
-          ret = "WebGL 2.0 (Expo-android-" + _package2.default.version + ") (" + ret + ")";
+          ret = "WebGL 2.0 (Expo-ios-" + _package2.default.version + ") (" + ret + ")";
         }
 
         var type = getParameterTypes[pname];
@@ -46185,7 +46206,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
   function escapeForAndroid(args) {
     {
-      return (0, _lodash2.default)(args, escapeBlob);
+      return args;
     }
   }
 
@@ -48195,7 +48216,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     dismissAdAsync: function dismissAdAsync() {
       return new Promise(function (resolve, reject) {
         {
-          reject(new Error('Dismissing ads programmatically is supported only on iOS.'));
+          AdMobInterstitialManager.dismissAd().then(resolve).catch(reject);
         }
       });
     },
@@ -48263,7 +48284,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     dismissAdAsync: function dismissAdAsync() {
       return new Promise(function (resolve, reject) {
         {
-          reject(new Error('Dismissing ads programmatically is supported only on iOS.'));
+          AdMobRewardedVideoAdManager.dismissAd().then(resolve).catch(reject);
         }
       });
     },
@@ -48488,10 +48509,17 @@ __d(function (global, _require, module, exports, _dependencyMap) {
                 throw new Error('No barCodeTypes requested, provide at least one barCodeType for scanner');
 
               case 2:
-                effectiveBarCodeTypes = barCodeTypes || Object.values(ExpoBarCodeScannerModule.BarCodeType);
-                return _context.abrupt("return", ExpoBarCodeScannerModule.scanFromURLAsync(url, effectiveBarCodeTypes));
+                if (!(Array.isArray(barCodeTypes) && !barCodeTypes.includes(BarCodeScanner.Constants.BarCodeType.qr))) {
+                  _context.next = 4;
+                  break;
+                }
+
+                throw new Error('Only QR type is supported by scanFromURLAsync() on iOS');
 
               case 4:
+                return _context.abrupt("return", ExpoBarCodeScannerModule.scanFromURLAsync(url, [BarCodeScanner.Constants.BarCodeType.qr]));
+
+              case 7:
               case "end":
                 return _context.stop();
             }
@@ -49651,31 +49679,26 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       key: "render",
       value: function render() {
         var _props = this.props,
-            tint = _props.tint,
-            props = babelHelpers.objectWithoutProperties(_props, ["tint"]);
-        var backgroundColor = void 0;
-
-        if (tint === 'dark') {
-          backgroundColor = 'rgba(0,0,0,0.5)';
-        } else if (tint === 'light') {
-          backgroundColor = 'rgba(255,255,255,0.7)';
-        } else {
-          backgroundColor = 'rgba(255,255,255,0.4)';
-        }
-
-        return React.createElement(_reactNative.View, babelHelpers.extends({}, props, {
-          style: [this.props.style, {
-            backgroundColor: backgroundColor
+            style = _props.style,
+            props = babelHelpers.objectWithoutProperties(_props, ["style"]);
+        return React.createElement(NativeBlurView, babelHelpers.extends({}, props, {
+          style: [style, {
+            backgroundColor: 'transparent'
           }]
         }));
       }
     }]);
     return BlurView;
   }(React.Component), _class.propTypes = babelHelpers.extends({
-    tint: _propTypes2.default.oneOf(['light', 'default', 'dark'])
-  }, _reactNative.ViewPropTypes), _temp);
+    tint: _propTypes2.default.oneOf(['light', 'default', 'dark']).isRequired,
+    intensity: _propTypes2.default.number.isRequired
+  }, _reactNative.ViewPropTypes), _class.defaultProps = {
+    tint: 'default',
+    intensity: 50
+  }, _temp);
   exports.default = BlurView;
-},986,[120,103,14]);
+  var NativeBlurView = (0, _reactNative.requireNativeComponent)('ExponentBlurView', BlurView);
+},398,[120,103,14]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   module.exports = {
     get Camera() {
@@ -49829,13 +49852,9 @@ __d(function (global, _require, module, exports, _dependencyMap) {
           while (1) {
             switch (_context2.prev = _context2.next) {
               case 0:
-                _context2.next = 2;
-                return regeneratorRuntime.awrap(CameraManager.getSupportedRatios(this._cameraHandle));
+                throw new Error('Ratio is not supported on iOS');
 
-              case 2:
-                return _context2.abrupt("return", _context2.sent);
-
-              case 3:
+              case 1:
               case "end":
                 return _context2.stop();
             }
@@ -49937,6 +49956,10 @@ __d(function (global, _require, module, exports, _dependencyMap) {
           newProps.faceDetectorEnabled = true;
         }
 
+        {
+          delete newProps.ratio;
+          delete newProps.useCamera2Api;
+        }
         return newProps;
       }
     }, {
@@ -50575,6 +50598,9 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       var _this6 = babelHelpers.possibleConstructorReturn(this, (RectButton.__proto__ || Object.getPrototypeOf(RectButton)).call(this, props));
 
       _this6._onActiveStateChange = function (active) {
+        {
+          _this6._opacity.setValue(active ? _this6.props.activeOpacity : 0);
+        }
         _this6.props.onActiveStateChange && _this6.props.onActiveStateChange(active);
       };
 
@@ -50618,6 +50644,9 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       var _this7 = babelHelpers.possibleConstructorReturn(this, (BorderlessButton.__proto__ || Object.getPrototypeOf(BorderlessButton)).call(this, props));
 
       _this7._onActiveStateChange = function (active) {
+        {
+          _this7._opacity.setValue(active ? _this7.props.activeOpacity : 1);
+        }
         _this7.props.onActiveStateChange && _this7.props.onActiveStateChange(active);
       };
 
@@ -50636,7 +50665,9 @@ __d(function (global, _require, module, exports, _dependencyMap) {
           AnimatedBaseButton,
           babelHelpers.extends({}, rest, {
             onActiveStateChange: this._onActiveStateChange,
-            style: [style, false]
+            style: [style, {
+              opacity: this._opacity
+            }]
           }),
           children
         );
@@ -50683,7 +50714,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   exports.Swipeable = _Swipeable2.default;
   exports.DrawerLayout = _DrawerLayout2.default;
   exports.Directions = Directions;
-},403,[103,14,168,404,120,987,406,407]);
+},403,[103,14,168,404,120,405,406,407]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   'use strict';
 
@@ -50802,124 +50833,10 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   });
   exports.default = gestureHandlerRootHOC;
 
-  var _react = _require(_dependencyMap[0]);
-
-  var _react2 = babelHelpers.interopRequireDefault(_react);
-
-  var _reactNative = _require(_dependencyMap[1]);
-
-  var _hoistNonReactStatics = _require(_dependencyMap[2]);
-
-  var _hoistNonReactStatics2 = babelHelpers.interopRequireDefault(_hoistNonReactStatics);
-
-  var iface = {
-    name: 'GestureHandlerRootView',
-    propTypes: babelHelpers.extends({}, _reactNative.ViewPropTypes)
-  };
-  var GestureHandlerRootView = (0, _reactNative.requireNativeComponent)('GestureHandlerRootView', iface);
-
   function gestureHandlerRootHOC(Component) {
-    var containerStyles = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
-
-    var Wrapper = function (_React$Component) {
-      babelHelpers.inherits(Wrapper, _React$Component);
-
-      function Wrapper() {
-        babelHelpers.classCallCheck(this, Wrapper);
-        return babelHelpers.possibleConstructorReturn(this, (Wrapper.__proto__ || Object.getPrototypeOf(Wrapper)).apply(this, arguments));
-      }
-
-      babelHelpers.createClass(Wrapper, [{
-        key: "render",
-        value: function render() {
-          return _react2.default.createElement(
-            GestureHandlerRootView,
-            {
-              style: [styles.container, containerStyles]
-            },
-            _react2.default.createElement(Component, this.props)
-          );
-        }
-      }]);
-      return Wrapper;
-    }(_react2.default.Component);
-
-    (0, _hoistNonReactStatics2.default)(Wrapper, Component);
-    return Wrapper;
+    return Component;
   }
-
-  var styles = _reactNative.StyleSheet.create({
-    container: {
-      flex: 1
-    }
-  });
-},987,[103,14,913]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-    'use strict';
-
-    var REACT_STATICS = {
-        childContextTypes: true,
-        contextTypes: true,
-        defaultProps: true,
-        displayName: true,
-        getDefaultProps: true,
-        getDerivedStateFromProps: true,
-        mixins: true,
-        propTypes: true,
-        type: true
-    };
-    var KNOWN_STATICS = {
-        name: true,
-        length: true,
-        prototype: true,
-        caller: true,
-        callee: true,
-        arguments: true,
-        arity: true
-    };
-    var defineProperty = Object.defineProperty;
-    var getOwnPropertyNames = Object.getOwnPropertyNames;
-    var getOwnPropertySymbols = Object.getOwnPropertySymbols;
-    var getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
-    var getPrototypeOf = Object.getPrototypeOf;
-    var objectPrototype = getPrototypeOf && getPrototypeOf(Object);
-
-    function hoistNonReactStatics(targetComponent, sourceComponent, blacklist) {
-        if (typeof sourceComponent !== 'string') {
-            if (objectPrototype) {
-                var inheritedComponent = getPrototypeOf(sourceComponent);
-
-                if (inheritedComponent && inheritedComponent !== objectPrototype) {
-                    hoistNonReactStatics(targetComponent, inheritedComponent, blacklist);
-                }
-            }
-
-            var keys = getOwnPropertyNames(sourceComponent);
-
-            if (getOwnPropertySymbols) {
-                keys = keys.concat(getOwnPropertySymbols(sourceComponent));
-            }
-
-            for (var i = 0; i < keys.length; ++i) {
-                var key = keys[i];
-
-                if (!REACT_STATICS[key] && !KNOWN_STATICS[key] && (!blacklist || !blacklist[key])) {
-                    var descriptor = getOwnPropertyDescriptor(sourceComponent, key);
-
-                    try {
-                        defineProperty(targetComponent, key, descriptor);
-                    } catch (e) {}
-                }
-            }
-
-            return targetComponent;
-        }
-
-        return targetComponent;
-    }
-
-    module.exports = hoistNonReactStatics;
-},913,[]);
+},405,[]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   Object.defineProperty(exports, "__esModule", {
     value: true
@@ -51770,21 +51687,16 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       key: "render",
       value: function render() {
         var _props = this.props,
-            children = _props.children,
             colors = _props.colors,
-            end = _props.end,
             locations = _props.locations,
             start = _props.start,
-            style = _props.style,
-            otherProps = babelHelpers.objectWithoutProperties(_props, ["children", "colors", "end", "locations", "start", "style"]);
+            end = _props.end,
+            otherProps = babelHelpers.objectWithoutProperties(_props, ["colors", "locations", "start", "end"]);
 
         if (colors && locations && colors.length !== locations.length) {
           console.warn('LinearGradient colors and locations props should be arrays of the same length');
         }
 
-        var flatStyle = _reactNative.StyleSheet.flatten(style) || {};
-        var borderRadius = flatStyle.borderRadius || 0;
-        var borderRadiiPerCorner = [flatStyle.borderTopLeftRadius || borderRadius, flatStyle.borderTopLeftRadius || borderRadius, flatStyle.borderTopRightRadius || borderRadius, flatStyle.borderTopRightRadius || borderRadius, flatStyle.borderBottomRightRadius || borderRadius, flatStyle.borderBottomRightRadius || borderRadius, flatStyle.borderBottomLeftRadius || borderRadius, flatStyle.borderBottomLeftRadius || borderRadius];
         var startProp = start;
         var endProp = end;
 
@@ -51796,27 +51708,12 @@ __d(function (global, _require, module, exports, _dependencyMap) {
           endProp = [end.x, end.y];
         }
 
-        return _react2.default.createElement(
-          _reactNative.View,
-          babelHelpers.extends({}, otherProps, {
-            style: style
-          }),
-          _react2.default.createElement(NativeLinearGradient, {
-            style: {
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              bottom: 0,
-              right: 0
-            },
-            colors: colors.map(_reactNative.processColor),
-            startPoint: startProp,
-            endPoint: endProp,
-            locations: locations ? locations.slice(0, colors.length) : null,
-            borderRadii: borderRadiiPerCorner
-          }),
-          children
-        );
+        return _react2.default.createElement(NativeLinearGradient, babelHelpers.extends({}, otherProps, {
+          colors: colors.map(_reactNative.processColor),
+          locations: locations ? locations.slice(0, colors.length) : null,
+          startPoint: startProp,
+          endPoint: endProp
+        }));
       }
     }]);
     return LinearGradient;
@@ -51828,7 +51725,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   }, _reactNative.ViewPropTypes), _temp);
   exports.default = LinearGradient;
   var NativeLinearGradient = (0, _reactNative.requireNativeComponent)('ExponentLinearGradient', null);
-},988,[103,120,14]);
+},409,[103,120,14]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   Object.defineProperty(exports, "__esModule", {
     value: true
@@ -52029,7 +51926,6 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   var NOT_SUPPORTED = exports.NOT_SUPPORTED = 'NOT_SUPPORTED';
 
   function getAirMapName(provider) {
-    return 'AIRMap';
     if (provider === _ProviderConstants.PROVIDER_GOOGLE) return 'AIRGoogleMap';
     return 'AIRMap';
   }
@@ -52072,13 +51968,13 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       }
 
       var providerInfo = providers[provider];
-      var platformSupport = providerInfo["android"];
+      var platformSupport = providerInfo["ios"];
       var componentName = getAirComponentName(provider, componentType);
 
       if (platformSupport === NOT_SUPPORTED) {
-        components[provider] = createNotSupportedComponent("react-native-maps: " + componentName + " is not supported on " + "android");
+        components[provider] = createNotSupportedComponent("react-native-maps: " + componentName + " is not supported on " + "ios");
       } else if (platformSupport === SUPPORTED) {
-        if (provider !== _ProviderConstants.PROVIDER_GOOGLE || false) {
+        if (provider !== _ProviderConstants.PROVIDER_GOOGLE || googleMapIsInstalled) {
           components[provider] = (0, _reactNative.requireNativeComponent)(componentName, Component);
         }
       } else {
@@ -52772,7 +52668,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       var _this = babelHelpers.possibleConstructorReturn(this, (MapView.__proto__ || Object.getPrototypeOf(MapView)).call(this, props));
 
       _this.state = {
-        isReady: false
+        isReady: true
       };
       _this._onMapReady = _this._onMapReady.bind(_this);
       _this._onMarkerPress = _this._onMarkerPress.bind(_this);
@@ -52949,6 +52845,18 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       value: function takeSnapshot(args) {
         var _this2 = this;
 
+        if (arguments.length === 4) {
+          console.warn('Old takeSnapshot API has been deprecated; will be removed in the near future');
+          var width = arguments[0];
+          var height = arguments[1];
+          var region = arguments[2];
+          var callback = arguments[3];
+
+          this._runCommand('takeSnapshot', [width || 0, height || 0, region || {}, 'png', 1, 'legacy', callback]);
+
+          return undefined;
+        }
+
         var config = {
           width: args.width || 0,
           height: args.height || 0,
@@ -52960,7 +52868,15 @@ __d(function (global, _require, module, exports, _dependencyMap) {
         if (config.format !== 'png' && config.format !== 'jpg') throw new Error('Invalid format specified');
         if (config.result !== 'file' && config.result !== 'base64') throw new Error('Invalid result specified');
         {
-          return _reactNative.NativeModules.AirMapModule.takeSnapshot(this._getHandle(), config);
+          return new Promise(function (resolve, reject) {
+            _this2._runCommand('takeSnapshot', [config.width, config.height, config.region, config.format, config.quality, config.result, function (err, snapshot) {
+              if (err) {
+                reject(err);
+              } else {
+                resolve(snapshot);
+              }
+            }]);
+          });
         }
         return Promise.reject('takeSnapshot not supported on this platform');
       }
@@ -52968,7 +52884,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       key: "pointForCoordinate",
       value: function pointForCoordinate(coordinate) {
         {
-          return _reactNative.NativeModules.AirMapModule.pointForCoordinate(this._getHandle(), coordinate);
+          return this._runCommand('pointForCoordinate', [coordinate]);
         }
         return Promise.reject('pointForCoordinate not supported on this platform');
       }
@@ -52976,7 +52892,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       key: "coordinateForPoint",
       value: function coordinateForPoint(point) {
         {
-          return _reactNative.NativeModules.AirMapModule.coordinateForPoint(this._getHandle(), point);
+          return this._runCommand('coordinateForPoint', [point]);
         }
         return Promise.reject('coordinateForPoint not supported on this platform');
       }
@@ -52998,7 +52914,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     }, {
       key: "_runCommand",
       value: function _runCommand(name, args) {
-        switch ("android") {
+        switch ("ios") {
           case 'android':
             return _reactNative.NativeModules.UIManager.dispatchViewManagerCommand(this._getHandle(), this._uiManagerCommand(name), args);
 
@@ -53006,7 +52922,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
             return this._mapManagerCommand(name).apply(undefined, [this._getHandle()].concat(babelHelpers.toConsumableArray(args)));
 
           default:
-            return Promise.reject("Invalid platform was passed: android");
+            return Promise.reject("Invalid platform was passed: ios");
         }
       }
     }, {
@@ -53025,6 +52941,11 @@ __d(function (global, _require, module, exports, _dependencyMap) {
             onMapReady: this._onMapReady,
             onLayout: this._onLayout
           }, this.props);
+
+          if (props.provider === ProviderConstants.PROVIDER_DEFAULT && GOOGLE_MAPS_ONLY_TYPES.includes(props.mapType)) {
+            props.mapType = MAP_TYPES.standard;
+          }
+
           props.handlePanDrag = !!props.onPanDrag;
         } else {
           props = {
@@ -53036,14 +52957,6 @@ __d(function (global, _require, module, exports, _dependencyMap) {
             onMapReady: this._onMapReady,
             onLayout: this._onLayout
           };
-        }
-
-        if (this.props.liteMode) {
-          return _react2.default.createElement(AIRMapLite, babelHelpers.extends({
-            ref: function ref(_ref) {
-              _this3.map = _ref;
-            }
-          }, props));
         }
 
         var AIRMap = getAirMapComponent(this.props.provider);
@@ -53077,7 +52990,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     default: nativeComponent('AIRMap')
   };
   {
-    airMaps.google = airMaps.default;
+    airMaps.google = _decorateMapComponent.googleMapIsInstalled ? nativeComponent('AIRGoogleMap') : (0, _decorateMapComponent.createNotSupportedComponent)('react-native-maps: AirGoogleMaps dir must be added to your xCode project to support GoogleMaps on iOS.');
   }
 
   var getAirMapComponent = function getAirMapComponent(provider) {
@@ -53227,7 +53140,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     }, {
       key: "_runCommand",
       value: function _runCommand(name, args) {
-        switch ("android") {
+        switch ("ios") {
           case 'android':
             _reactNative.NativeModules.UIManager.dispatchViewManagerCommand(this._getHandle(), this.getUIManagerCommand(name), args);
 
@@ -74323,13 +74236,25 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
   function authenticateAsync() {
     var promptMessageIOS = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'Authenticate';
+    var result;
     return regeneratorRuntime.async(function authenticateAsync$(_context3) {
       while (1) {
         switch (_context3.prev = _context3.next) {
           case 0:
-            return _context3.abrupt("return", LocalAuthentication.authenticateAsync());
+            (0, _invariant2.default)(typeof promptMessageIOS === 'string' && promptMessageIOS.length, 'Fingerprint.authenticateAsync must be called with a non-empty string on iOS');
+            _context3.next = 3;
+            return regeneratorRuntime.awrap(LocalAuthentication.authenticateAsync(promptMessageIOS));
 
-          case 1:
+          case 3:
+            result = _context3.sent;
+
+            if (result.warning) {
+              console.warn(result.warning);
+            }
+
+            return _context3.abrupt("return", result);
+
+          case 6:
           case "end":
             return _context3.stop();
         }
@@ -74558,7 +74483,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   };
 
   function isAvailable() {
-    if (!_expoConstants.Constants.isDevice || _reactNative.Platform.isTVOS || true || _expoConstants.Constants.deviceYearClass < 2015 || !ExponentAR.isSupported || !ExponentAR.startAsync) {
+    if (!_expoConstants.Constants.isDevice || _reactNative.Platform.isTVOS || false || _expoConstants.Constants.deviceYearClass < 2015 || !ExponentAR.isSupported || !ExponentAR.startAsync) {
         return false;
       }
 
@@ -74568,8 +74493,8 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   function getUnavailabilityReason() {
     if (!_expoConstants.Constants.isDevice) {
       return AvailabilityErrorMessages.Simulator;
-    } else {
-        return AvailabilityErrorMessages.ARKitOnlyOnIOS + " " + "android" + " device";
+    } else if (_expoConstants.Constants.deviceYearClass < 2015) {
+        return AvailabilityErrorMessages.ANineChip + " " + _expoConstants.Constants.deviceYearClass + " device";
       }
 
     return 'Unknown Reason';
@@ -75812,12 +75737,15 @@ __d(function (global, _require, module, exports, _dependencyMap) {
         switch (_context3.prev = _context3.next) {
           case 0:
             _context3.next = 2;
-            return regeneratorRuntime.awrap(_reactNative.NativeModules.ExponentBrightness.getSystemBrightnessAsync());
+            return regeneratorRuntime.awrap(getBrightnessAsync());
 
           case 2:
             return _context3.abrupt("return", _context3.sent);
 
-          case 3:
+          case 5:
+            return _context3.abrupt("return", _context3.sent);
+
+          case 6:
           case "end":
             return _context3.stop();
         }
@@ -75832,7 +75760,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
           case 0:
             brightnessValue = Math.max(0, Math.min(brightnessValue, 1));
             _context4.next = 3;
-            return regeneratorRuntime.awrap(_reactNative.NativeModules.ExponentBrightness.setSystemBrightnessAsync(brightnessValue));
+            return regeneratorRuntime.awrap(setBrightnessAsync(brightnessValue));
 
           case 3:
             return _context4.abrupt("return", _context4.sent);
@@ -75945,7 +75873,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
               color = (0, _reactNative.processColor)(color);
             }
 
-            if (details.hasOwnProperty('source') || details.hasOwnProperty('color') || details.hasOwnProperty('allowsModifications') || details.hasOwnProperty('allowedAvailabilities') || details.hasOwnProperty('isPrimary') || details.hasOwnProperty('ownerAccount') || details.hasOwnProperty('timeZone') || details.hasOwnProperty('allowedReminders') || details.hasOwnProperty('allowedAttendeeTypes') || details.hasOwnProperty('accessLevel')) {
+            if (details.hasOwnProperty('source') || details.hasOwnProperty('type') || details.hasOwnProperty('entityType') || details.hasOwnProperty('allowsModifications') || details.hasOwnProperty('allowedAvailabilities')) {
               console.warn('updateCalendarAsync was called with one or more read-only properties, which will not be updated');
             }
 
@@ -76043,7 +75971,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
             throw new Error('getEventAsync must be called with an id (string) of the target event');
 
           case 2:
-            return _context6.abrupt("return", _reactNative.NativeModules.ExponentCalendar.getEventByIdAsync(id));
+            return _context6.abrupt("return", _reactNative.NativeModules.ExponentCalendar.getEventByIdAsync(id, instanceStartDate));
 
           case 3:
           case "end":
@@ -76068,37 +75996,13 @@ __d(function (global, _require, module, exports, _dependencyMap) {
             throw new Error('createEventAsync must be called with an id (string) of the target calendar');
 
           case 2:
-            if (details.startDate) {
-              _context7.next = 4;
-              break;
-            }
-
-            throw new Error('createEventAsync requires a startDate (Date)');
-
-          case 4:
-            if (details.endDate) {
-              _context7.next = 6;
-              break;
-            }
-
-            throw new Error('createEventAsync requires an endDate (Date)');
-
-          case 6:
-            if (details.timeZone) {
-              _context7.next = 8;
-              break;
-            }
-
-            throw new Error('createEventAsync requires a timeZone (string)');
-
-          case 8:
             newDetails = babelHelpers.extends({}, details, {
               id: undefined,
               calendarId: calendarId === DEFAULT ? undefined : calendarId
             });
             return _context7.abrupt("return", _reactNative.NativeModules.ExponentCalendar.saveEventAsync(newDetails, {}));
 
-          case 10:
+          case 4:
           case "end":
             return _context7.stop();
         }
@@ -76127,6 +76031,10 @@ __d(function (global, _require, module, exports, _dependencyMap) {
             throw new Error('updateEventAsync must be called with an id (string) of the target event');
 
           case 2:
+            if (details.hasOwnProperty('creationDate') || details.hasOwnProperty('lastModifiedDate') || details.hasOwnProperty('originalStartDate') || details.hasOwnProperty('isDetached') || details.hasOwnProperty('status') || details.hasOwnProperty('organizer')) {
+              console.warn('updateEventAsync was called with one or more read-only properties, which will not be updated');
+            }
+
             newDetails = babelHelpers.extends({}, details, {
               id: id,
               instanceStartDate: instanceStartDate
@@ -76135,7 +76043,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
               futureEvents: futureEvents
             }));
 
-          case 4:
+          case 5:
           case "end":
             return _context8.stop();
         }
@@ -76195,7 +76103,10 @@ __d(function (global, _require, module, exports, _dependencyMap) {
             throw new Error('getAttendeesForEventAsync must be called with an id (string) of the target event');
 
           case 2:
-            params = id;
+            params = {
+              id: id,
+              instanceStartDate: instanceStartDate
+            };
             return _context10.abrupt("return", _reactNative.NativeModules.ExponentCalendar.getAttendeesForEventAsync(params));
 
           case 4:
@@ -76213,52 +76124,47 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       while (1) {
         switch (_context11.prev = _context11.next) {
           case 0:
-            if (eventId) {
-              _context11.next = 2;
-              break;
-            }
+            throw new Error('createAttendeeAsync is not available on iOS');
 
-            throw new Error('createAttendeeAsync must be called with an id (string) of the target event');
-
-          case 2:
+          case 3:
             if (details.email) {
-              _context11.next = 4;
+              _context11.next = 5;
               break;
             }
 
             throw new Error('createAttendeeAsync requires an email (string)');
 
-          case 4:
+          case 5:
             if (details.role) {
-              _context11.next = 6;
+              _context11.next = 7;
               break;
             }
 
             throw new Error('createAttendeeAsync requires a role (string)');
 
-          case 6:
+          case 7:
             if (details.type) {
-              _context11.next = 8;
+              _context11.next = 9;
               break;
             }
 
             throw new Error('createAttendeeAsync requires a type (string)');
 
-          case 8:
+          case 9:
             if (details.status) {
-              _context11.next = 10;
+              _context11.next = 11;
               break;
             }
 
             throw new Error('createAttendeeAsync requires a status (string)');
 
-          case 10:
+          case 11:
             newDetails = babelHelpers.extends({}, details, {
               id: undefined
             });
             return _context11.abrupt("return", _reactNative.NativeModules.ExponentCalendar.saveAttendeeForEventAsync(newDetails, eventId));
 
-          case 12:
+          case 13:
           case "end":
             return _context11.stop();
         }
@@ -76273,20 +76179,15 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       while (1) {
         switch (_context12.prev = _context12.next) {
           case 0:
-            if (id) {
-              _context12.next = 2;
-              break;
-            }
+            throw new Error('updateAttendeeAsync is not available on iOS');
 
-            throw new Error('updateAttendeeAsync must be called with an id (string) of the target event');
-
-          case 2:
+          case 3:
             newDetails = babelHelpers.extends({}, details, {
               id: id
             });
             return _context12.abrupt("return", _reactNative.NativeModules.ExponentCalendar.saveAttendeeForEventAsync(newDetails, null));
 
-          case 4:
+          case 5:
           case "end":
             return _context12.stop();
         }
@@ -76299,17 +76200,12 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       while (1) {
         switch (_context13.prev = _context13.next) {
           case 0:
-            if (id) {
-              _context13.next = 2;
-              break;
-            }
-
-            throw new Error('deleteAttendeeAsync must be called with an id (string) of the target event');
-
-          case 2:
-            return _context13.abrupt("return", _reactNative.NativeModules.ExponentCalendar.deleteAttendeeAsync(id));
+            throw new Error('deleteAttendeeAsync is not available on iOS');
 
           case 3:
+            return _context13.abrupt("return", _reactNative.NativeModules.ExponentCalendar.deleteAttendeeAsync(id));
+
+          case 4:
           case "end":
             return _context13.stop();
         }
@@ -76322,28 +76218,33 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       while (1) {
         switch (_context14.prev = _context14.next) {
           case 0:
-            throw new Error('getRemindersAsync is not available on Android');
+            if (!(status && !startDate)) {
+              _context14.next = 2;
+              break;
+            }
 
-          case 3:
+            throw new Error('getRemindersAsync must be called with a startDate (date) to search for reminders');
+
+          case 2:
             if (!(status && !endDate)) {
-              _context14.next = 5;
+              _context14.next = 4;
               break;
             }
 
             throw new Error('getRemindersAsync must be called with an endDate (date) to search for reminders');
 
-          case 5:
+          case 4:
             if (!(!calendarIds || !calendarIds.length)) {
-              _context14.next = 7;
+              _context14.next = 6;
               break;
             }
 
             throw new Error('getRemindersAsync must be called with a non-empty array of calendarIds to search');
 
-          case 7:
+          case 6:
             return _context14.abrupt("return", _reactNative.NativeModules.ExponentCalendar.getRemindersAsync(startDate || null, endDate || null, calendarIds, status || null));
 
-          case 8:
+          case 7:
           case "end":
             return _context14.stop();
         }
@@ -76356,12 +76257,17 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       while (1) {
         switch (_context15.prev = _context15.next) {
           case 0:
-            throw new Error('getReminderAsync is not available on Android');
+            if (id) {
+              _context15.next = 2;
+              break;
+            }
 
-          case 3:
+            throw new Error('getReminderAsync must be called with an id (string) of the target reminder');
+
+          case 2:
             return _context15.abrupt("return", _reactNative.NativeModules.ExponentCalendar.getReminderByIdAsync(id));
 
-          case 4:
+          case 3:
           case "end":
             return _context15.stop();
         }
@@ -76376,16 +76282,21 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       while (1) {
         switch (_context16.prev = _context16.next) {
           case 0:
-            throw new Error('createReminderAsync is not available on Android');
+            if (calendarId) {
+              _context16.next = 2;
+              break;
+            }
 
-          case 3:
+            throw new Error('createReminderAsync must be called with an id (string) of the target calendar');
+
+          case 2:
             newDetails = babelHelpers.extends({}, details, {
               id: undefined,
               calendarId: calendarId === DEFAULT ? undefined : calendarId
             });
             return _context16.abrupt("return", _reactNative.NativeModules.ExponentCalendar.saveReminderAsync(newDetails));
 
-          case 5:
+          case 4:
           case "end":
             return _context16.stop();
         }
@@ -76400,9 +76311,14 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       while (1) {
         switch (_context17.prev = _context17.next) {
           case 0:
-            throw new Error('updateReminderAsync is not available on Android');
+            if (id) {
+              _context17.next = 2;
+              break;
+            }
 
-          case 3:
+            throw new Error('updateReminderAsync must be called with an id (string) of the target reminder');
+
+          case 2:
             if (details.hasOwnProperty('creationDate') || details.hasOwnProperty('lastModifiedDate')) {
               console.warn('updateReminderAsync was called with one or more read-only properties, which will not be updated');
             }
@@ -76412,7 +76328,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
             });
             return _context17.abrupt("return", _reactNative.NativeModules.ExponentCalendar.saveReminderAsync(newDetails));
 
-          case 6:
+          case 5:
           case "end":
             return _context17.stop();
         }
@@ -76425,12 +76341,17 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       while (1) {
         switch (_context18.prev = _context18.next) {
           case 0:
-            throw new Error('deleteReminderAsync is not available on Android');
+            if (id) {
+              _context18.next = 2;
+              break;
+            }
 
-          case 3:
+            throw new Error('deleteReminderAsync must be called with an id (string) of the target reminder');
+
+          case 2:
             return _context18.abrupt("return", _reactNative.NativeModules.ExponentCalendar.deleteReminderAsync(id));
 
-          case 4:
+          case 3:
           case "end":
             return _context18.stop();
         }
@@ -76443,9 +76364,9 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       while (1) {
         switch (_context19.prev = _context19.next) {
           case 0:
-            throw new Error('getSourcesAsync is not available on Android');
+            return _context19.abrupt("return", _reactNative.NativeModules.ExponentCalendar.getSourcesAsync());
 
-          case 2:
+          case 1:
           case "end":
             return _context19.stop();
         }
@@ -76458,12 +76379,17 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       while (1) {
         switch (_context20.prev = _context20.next) {
           case 0:
-            throw new Error('getSourceAsync is not available on Android');
+            if (id) {
+              _context20.next = 2;
+              break;
+            }
 
-          case 3:
+            throw new Error('getSourceAsync must be called with an id (string) of the target source');
+
+          case 2:
             return _context20.abrupt("return", _reactNative.NativeModules.ExponentCalendar.getSourceByIdAsync(id));
 
-          case 4:
+          case 3:
           case "end":
             return _context20.stop();
         }
@@ -76472,6 +76398,11 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   }
 
   function openEventInCalendar(id) {
+    {
+      console.warn('openEventInCalendar is not available on iOS');
+      return;
+    }
+
     if (!id) {
       throw new Error('openEventInCalendar must be called with an id (string) of the target event');
     }
@@ -76622,7 +76553,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   var _uuidJs2 = babelHelpers.interopRequireDefault(_uuidJs);
 
   var ExpoContacts = _expoCore.NativeModulesProxy.ExpoContacts;
-  var isIos = false;
+  var isIos = true;
 
   function shareContactAsync(contactId, message) {
     var shareOptions = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
@@ -77287,10 +77218,10 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     module: _require(_dependencyMap[0]),
     component: _require(_dependencyMap[1])
   };
-},515,[989,990]);
+},515,[516,519]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   module.exports = _require(_dependencyMap[0]);
-},989,[517]);
+},516,[517]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   var _extends = Object.assign || function (target) {
     for (var i = 1; i < arguments.length; i++) {
@@ -77491,7 +77422,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 },518,[]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   module.exports = _require(_dependencyMap[0]);
-},990,[520]);
+},519,[520]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   var _extends = Object.assign || function (target) {
     for (var i = 1; i < arguments.length; i++) {
@@ -77669,7 +77600,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   }
 
   module.exports = SafeComponentCreate;
-},520,[14,518,989]);
+},520,[14,518,516]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   Object.defineProperty(exports, "__esModule", {
     value: true
@@ -77772,7 +77703,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     }]);
     return Branch;
   }(), _initialiseProps = function _initialiseProps() {
-    this.nativeEventEmitter = _reactNative.DeviceEventEmitter;
+    this.nativeEventEmitter = new _reactNative.NativeEventEmitter(RNBranchEventEmitter);
     this._checkCachedEvents = true;
     this._debug = false;
 
@@ -77804,7 +77735,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     this.openURL = function (url) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       return function () {
-        return RNBranch.openURL(url, options);
+        return RNBranch.openURL(url);
       }();
     };
 
@@ -77944,7 +77875,6 @@ __d(function (global, _require, module, exports, _dependencyMap) {
               },
               listOnSpotlight: function listOnSpotlight() {
                 console.info('[Branch] listOnSpotlight is deprecated. Please use locallyIndex instead.');
-                return Promise.resolve();
                 return this._tryFunction(RNBranch.listOnSpotlight);
               },
               userCompletedAction: function userCompletedAction(event) {
@@ -78275,71 +78205,26 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     };
 
     {
-      var _ret = function () {
-        var localizedValues = [];
-
-        for (var _iterator = Object.values(copy), _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[typeof Symbol === "function" ? typeof Symbol === "function" ? Symbol.iterator : "@@iterator" : "@@iterator"]();;) {
-          var _ref;
-
-          if (_isArray) {
-            if (_i >= _iterator.length) break;
-            _ref = _iterator[_i++];
+      var handlers = {
+        setLocale: setLocaleHelper
+      };
+      var methods = new Set(Object.keys(handlers));
+      return new Proxy(this, {
+        set: function set(target, name, value) {},
+        get: function get(target, name) {
+          if (typeof name !== 'string') {
+            return target[name];
           } else {
-            _i = _iterator.next();
-            if (_i.done) break;
-            _ref = _i.value;
-          }
-
-          var values = _ref;
-          Object.keys(values).forEach(function (s) {
-            return localizedValues.push(s);
-          });
-        }
-
-        localizedValues = new Set(localizedValues);
-        var proxy = {};
-        Object.defineProperty(proxy, 'setLocale', {
-          get: function get() {
-            return setLocaleHelper;
-          }
-        });
-        var methods = new Set(['setLocale']);
-
-        var _loop = function _loop(name) {
-          if (methods.has(name)) {
-            throw new Error("Cannot use " + name + " as a locale name");
-          }
-
-          Object.defineProperty(proxy, name, {
-            get: function get() {
+            if (defaultLocalePhrases.has(name)) {
               return localizationValueHelper(name);
+            } else if (methods.has(name)) {
+              return handlers[name];
+            } else {
+              return target[name];
             }
-          });
-        };
-
-        for (var _iterator2 = localizedValues.keys(), _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[typeof Symbol === "function" ? typeof Symbol === "function" ? Symbol.iterator : "@@iterator" : "@@iterator"]();;) {
-          var _ref2;
-
-          if (_isArray2) {
-            if (_i2 >= _iterator2.length) break;
-            _ref2 = _iterator2[_i2++];
-          } else {
-            _i2 = _iterator2.next();
-            if (_i2.done) break;
-            _ref2 = _i2.value;
           }
-
-          var name = _ref2;
-
-          _loop(name);
         }
-
-        return {
-          v: proxy
-        };
-      }();
-
-      if (typeof _ret === "object") return _ret.v;
+      });
     }
   };
 
@@ -78374,7 +78259,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     }
 
   };
-},527,[991]);
+},527,[528]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   Object.defineProperty(exports, "__esModule", {
     value: true
@@ -78382,18 +78267,22 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
   var _expoCore = _require(_dependencyMap[0]);
 
-  var _checkArgs = _require(_dependencyMap[1]);
+  var _processTheme = _require(_dependencyMap[1]);
+
+  var _processTheme2 = babelHelpers.interopRequireDefault(_processTheme);
+
+  var _checkArgs = _require(_dependencyMap[2]);
 
   var _checkArgs2 = babelHelpers.interopRequireDefault(_checkArgs);
 
-  var _checkInit = _require(_dependencyMap[2]);
+  var _checkInit = _require(_dependencyMap[3]);
 
   var _checkInit2 = babelHelpers.interopRequireDefault(_checkInit);
 
-  var _types = _require(_dependencyMap[3]);
+  var _types = _require(_dependencyMap[4]);
 
   var types = babelHelpers.interopRequireWildcard(_types);
-  var StripeModule = _expoCore.NativeModulesProxy.StripeModule;
+  var TPSStripeManager = _expoCore.NativeModulesProxy.TPSStripeManager;
 
   var Stripe = function Stripe() {
     var _this = this;
@@ -78405,55 +78294,103 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       (0, _checkArgs2.default)(types.setOptionsOptionsPropTypes, options, 'options', 'Stripe.setOptions');
       _this.stripeInitialized = true;
-      return StripeModule.init(options);
+      return TPSStripeManager.init(options);
     };
 
-    this.deviceSupportsAndroidPayAsync = function () {
-      return StripeModule.deviceSupportsAndroidPay();
+    this.deviceSupportsApplePayAsync = function () {
+      return TPSStripeManager.deviceSupportsApplePay();
     };
 
-    this.canMakeAndroidPayPaymentsAsync = function () {
-      return StripeModule.canMakeAndroidPayPayments();
-    };
-
-    this.paymentRequestWithAndroidPayAsync = function () {
+    this.canMakeApplePayPaymentsAsync = function () {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      (0, _checkArgs2.default)(types.canMakeApplePayPaymentsOptionsPropTypes, options, 'options', 'Stripe.canMakeApplePayPayments');
+      return TPSStripeManager.canMakeApplePayPayments(options);
+    };
+
+    this.paymentRequestWithApplePayAsync = function () {
+      var items = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       (0, _checkInit2.default)(_this);
-      (0, _checkArgs2.default)(types.paymentRequestWithAndroidPayOptionsPropTypes, options, 'options', 'Stripe.paymentRequestWithAndroidPay');
-      return StripeModule.paymentRequestWithAndroidPay(options);
+      return TPSStripeManager.paymentRequestWithApplePay(items, options);
+    };
+
+    this.completeApplePayRequestAsync = function () {
+      (0, _checkInit2.default)(_this);
+      return TPSStripeManager.completeApplePayRequest();
+    };
+
+    this.cancelApplePayRequestAsync = function () {
+      (0, _checkInit2.default)(_this);
+      return TPSStripeManager.cancelApplePayRequest();
+    };
+
+    this.openApplePaySetupAsync = function () {
+      return TPSStripeManager.openApplePaySetup();
     };
 
     this.paymentRequestWithCardFormAsync = function () {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       (0, _checkInit2.default)(_this);
       (0, _checkArgs2.default)(types.paymentRequestWithCardFormOptionsPropTypes, options, 'options', 'Stripe.paymentRequestWithCardForm');
-      return StripeModule.paymentRequestWithCardForm(options);
+      return TPSStripeManager.paymentRequestWithCardForm(babelHelpers.extends({}, options, {
+        theme: (0, _processTheme2.default)(options.theme)
+      }));
     };
 
     this.createTokenWithCardAsync = function () {
       var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       (0, _checkInit2.default)(_this);
       (0, _checkArgs2.default)(types.createTokenWithCardParamsPropTypes, params, 'params', 'Stripe.createTokenWithCard');
-      return StripeModule.createTokenWithCard(params);
+      return TPSStripeManager.createTokenWithCard(params);
     };
 
     this.createTokenWithBankAccountAsync = function () {
       var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       (0, _checkInit2.default)(_this);
       (0, _checkArgs2.default)(types.createTokenWithBankAccountParamsPropTypes, params, 'params', 'Stripe.createTokenWithBankAccount');
-      return StripeModule.createTokenWithBankAccount(params);
+      return TPSStripeManager.createTokenWithBankAccount(params);
     };
 
     this.createSourceWithParamsAsync = function () {
       var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       (0, _checkInit2.default)(_this);
       (0, _checkArgs2.default)(types.createSourceWithParamsPropType, params, 'params', 'Stripe.createSourceWithParams');
-      return StripeModule.createSourceWithParams(params);
+      return TPSStripeManager.createSourceWithParams(params);
     };
+
+    if (TPSStripeManager) {
+      this.TPSErrorDomain = TPSStripeManager.TPSErrorDomain;
+      this.TPSErrorCodeApplePayNotConfigured = TPSStripeManager.TPSErrorCodeApplePayNotConfigured;
+      this.TPSErrorCodePreviousRequestNotCompleted = TPSStripeManager.TPSErrorCodePreviousRequestNotCompleted;
+      this.TPSErrorCodeUserCancel = TPSStripeManager.TPSErrorCodeUserCancel;
+    }
   };
 
   exports.default = new Stripe();
-},991,[311,530,531,532]);
+},528,[311,529,530,531,532]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.default = processTheme;
+
+  var _processColor = _require(_dependencyMap[0]);
+
+  var _processColor2 = babelHelpers.interopRequireDefault(_processColor);
+
+  function processTheme() {
+    var theme = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    return Object.keys(theme).reduce(function (result, key) {
+      var value = theme[key];
+
+      if (key.toLowerCase().endsWith('color')) {
+        value = (0, _processColor2.default)(value);
+      }
+
+      return babelHelpers.extends({}, result, babelHelpers.defineProperty({}, key, value));
+    }, {});
+  }
+},529,[128]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   Object.defineProperty(exports, "__esModule", {
     value: true
@@ -78643,7 +78580,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            if (!(!options.uri && !options.html && false)) {
+            if (!(!options.uri && !options.html && !options.markupFormatterIOS)) {
               _context.next = 2;
               break;
             }
@@ -78674,7 +78611,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
-            throw new Error('Selecting the printer in advance is not available on Android.');
+            return _context2.abrupt("return", ExponentPrint.selectPrinter());
 
           case 1:
           case "end":
@@ -80656,9 +80593,6 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     }
 
     var color = (0, _base.add)((0, _base.multiply)(a, 16777216), (0, _base.multiply)(r, 65536), (0, _base.multiply)(g, 256), b);
-    {
-      return (0, _base.cond)((0, _base.lessThan)(color, 2147483648), color, (0, _base.sub)(color, Math.pow(2, 32)));
-    }
     return color;
   }
 },562,[537,14,541]);
@@ -82335,25 +82269,19 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
   function notification(type) {
     {
-      console.warn('`Expo.Haptic` is only available on iOS');
-
-      _reactNative.Vibration.vibrate();
+      _reactNative.NativeModules.ExponentHaptic.notification(type || 'success');
     }
   }
 
   function impact(style) {
     {
-      console.warn('`Expo.Haptic` is only available on iOS');
-
-      _reactNative.Vibration.vibrate();
+      _reactNative.NativeModules.ExponentHaptic.impact(style || 'medium');
     }
   }
 
   function selection() {
     {
-      console.warn('`Expo.Haptic` is only available on iOS');
-
-      _reactNative.Vibration.vibrate();
+      _reactNative.NativeModules.ExponentHaptic.selection();
     }
   }
 },587,[14]);
@@ -83005,10 +82933,6 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
     var fontReference = fontFamily;
 
-    if (fontFile) {
-      fontReference = fontFile.replace(/\.(otf|ttf)$/, '');
-    }
-
     var IconNamePropType = _propTypes2.default.oneOf(Object.keys(glyphMap));
 
     var Icon = (_temp2 = _class = function (_PureComponent) {
@@ -83086,9 +83010,6 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
     function ensureNativeModuleAvailable() {
       if (!NativeIconAPI) {
-        {
-          throw new Error('RNVectorIconsModule not available, did you properly integrate the module? Try running `react-native link react-native-vector-icons` and recompiling.');
-        }
         throw new Error('RNVectorIconsManager not available, did you add the library to your project and link with libRNVectorIcons.a? Try running `react-native link react-native-vector-icons` and recompiling.');
       }
     }
@@ -83140,6 +83061,15 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
     function loadFont() {
       var file = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : fontFile;
+      {
+        ensureNativeModuleAvailable();
+
+        if (!file) {
+          return Promise.reject(new Error('Unable to load font, because no file was specified. '));
+        }
+
+        return NativeIconAPI.loadFontWithFileName.apply(NativeIconAPI, babelHelpers.toConsumableArray(file.split('.')));
+      }
       return Promise.resolve();
     }
 
@@ -92744,9 +92674,9 @@ __d(function (global, _require, module, exports, _dependencyMap) {
             throw new Error('Invalid album ID. It must be a string!');
 
           case 5:
-            return _context2.abrupt("return", MediaLibrary.addAssetsToAlbumAsync(assetIds, albumId, !!copy));
+            return _context2.abrupt("return", MediaLibrary.addAssetsToAlbumAsync(assetIds, albumId));
 
-          case 6:
+          case 7:
           case "end":
             return _context2.stop();
         }
@@ -92870,33 +92800,25 @@ __d(function (global, _require, module, exports, _dependencyMap) {
           case 0:
             assetId = getId(asset);
 
-            if (!(typeof assetId !== 'string' || assetId.length === 0)) {
-              _context8.next = 3;
-              break;
-            }
-
-            throw new Error('MediaLibrary.createAlbumAsync must be called with an asset on Android.');
-
-          case 3:
             if (!(!albumName || typeof albumName !== 'string')) {
-              _context8.next = 5;
+              _context8.next = 3;
               break;
             }
 
             throw new Error('Invalid argument "albumName". It must be a string!');
 
-          case 5:
+          case 3:
             if (!(assetId != null && typeof assetId !== 'string')) {
-              _context8.next = 7;
+              _context8.next = 5;
               break;
             }
 
             throw new Error('Asset ID must be a string!');
 
-          case 7:
-            return _context8.abrupt("return", MediaLibrary.createAlbumAsync(albumName, assetId, !!copyAsset));
+          case 5:
+            return _context8.abrupt("return", MediaLibrary.createAlbumAsync(albumName, assetId));
 
-          case 8:
+          case 7:
           case "end":
             return _context8.stop();
         }
@@ -92913,9 +92835,9 @@ __d(function (global, _require, module, exports, _dependencyMap) {
           case 0:
             albumIds = arrayize(albums).map(getId);
             checkAlbumIds(albumIds);
-            return _context9.abrupt("return", MediaLibrary.deleteAlbumsAsync(albumIds));
+            return _context9.abrupt("return", MediaLibrary.deleteAlbumsAsync(albumIds, !!assetRemove));
 
-          case 4:
+          case 3:
           case "end":
             return _context9.stop();
         }
@@ -93000,9 +92922,9 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       while (1) {
         switch (_context11.prev = _context11.next) {
           case 0:
-            throw new Error('MediaLibrary.getMomentsAsync is not supported on Android!');
+            return _context11.abrupt("return", MediaLibrary.getMomentsAsync());
 
-          case 2:
+          case 1:
           case "end":
             return _context11.stop();
         }
@@ -93010,81 +92932,6 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     }, null, this);
   }
 },795,[14,311]);
-__d(function (global, _require, module, exports, _dependencyMap) {
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.watchStepCount = watchStepCount;
-  exports.getStepCountAsync = getStepCountAsync;
-  exports.isAvailableAsync = isAvailableAsync;
-
-  var _reactNative = _require(_dependencyMap[0]);
-
-  var _invariant = _require(_dependencyMap[1]);
-
-  var _invariant2 = babelHelpers.interopRequireDefault(_invariant);
-
-  var PedometerEventEmitter = new _reactNative.NativeEventEmitter(_reactNative.NativeModules.ExponentPedometer);
-  var _listenerCount = 0;
-
-  function watchStepCount(callback) {
-    if (_listenerCount === 0) {
-      _reactNative.NativeModules.ExponentPedometer.watchStepCount();
-    }
-
-    _listenerCount++;
-    var listener = PedometerEventEmitter.addListener('Exponent.pedometerUpdate', callback);
-    return {
-      remove: function remove() {
-        listener.remove();
-        _listenerCount--;
-
-        if (_listenerCount === 0) {
-          _reactNative.NativeModules.ExponentPedometer.stopWatchingStepCount();
-        }
-      }
-    };
-  }
-
-  function getStepCountAsync(start, end) {
-    return regeneratorRuntime.async(function getStepCountAsync$(_context) {
-      while (1) {
-        switch (_context.prev = _context.next) {
-          case 0:
-            (0, _invariant2.default)(start <= end, 'Pedometer: The start date must precede the end date.');
-            _context.next = 3;
-            return regeneratorRuntime.awrap(_reactNative.NativeModules.ExponentPedometer.getStepCountAsync(start.getTime(), end.getTime()));
-
-          case 3:
-            return _context.abrupt("return", _context.sent);
-
-          case 4:
-          case "end":
-            return _context.stop();
-        }
-      }
-    }, null, this);
-  }
-
-  function isAvailableAsync() {
-    return regeneratorRuntime.async(function isAvailableAsync$(_context2) {
-      while (1) {
-        switch (_context2.prev = _context2.next) {
-          case 0:
-            _context2.next = 2;
-            return regeneratorRuntime.awrap(_reactNative.NativeModules.ExponentPedometer.isAvailableAsync());
-
-          case 2:
-            return _context2.abrupt("return", _context2.sent);
-
-          case 3:
-          case "end":
-            return _context2.stop();
-        }
-      }
-    }, null, this);
-  }
-},992,[14,327]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   module.exports = {
     get Permissions() {
@@ -93356,7 +93203,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
         };
 
         _this._onTriggerEvent = function () {
-          if (_this.state.mediaViewNodeHandle !== -1 && true) {
+          if (_this.state.mediaViewNodeHandle !== -1 && false) {
             _NativeAdsManager2.default.triggerEvent((0, _reactNative.findNodeHandle)(_this._nativeAdViewRef));
           }
         };
@@ -94031,7 +93878,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     var uri = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
     {
-      return _reactNative.NativeModules.ExponentIntentLauncher.startActivity(activity, data, uri);
+      return Promise.reject(new Error('Unsupported platform'));
     }
   }
 },808,[14]);
@@ -94182,7 +94029,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   exports.default = {
     initialize: function initialize(options) {
       {
-        ExponentSegment.initializeAndroid(options.androidWriteKey);
+        ExponentSegment.initializeIOS(options.iosWriteKey);
       }
     },
     identify: function identify(userId) {
@@ -94381,13 +94228,13 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
   function pause() {
     {
-      throw new Error('Speech.pause is not available on Android');
+      ExponentSpeech.pause();
     }
   }
 
   function resume() {
     {
-      throw new Error('Speech.resume is not available on Android');
+      ExponentSpeech.resume();
     }
   }
 
@@ -94417,7 +94264,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   var _expoConstants = _require(_dependencyMap[1]);
 
   function isSupported() {
-    return false;
+    return _reactNative.NativeModules.ExponentStoreReview.isSupported;
   }
 
   function requestReview() {
@@ -94443,7 +94290,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   }
 
   function storeUrl() {
-    var OS = "android";
+    var OS = "ios";
 
     if (OS === 'ios') {
       return _expoConstants.Constants.manifest.ios.appStoreUrl;
@@ -94766,7 +94613,9 @@ __d(function (global, _require, module, exports, _dependencyMap) {
             {
               style: styles.container
             },
-            false,
+            _react2.default.createElement(_reactNative.StatusBar, {
+              barStyle: "default"
+            }),
             _react2.default.createElement(_AppNavigator2.default, null)
           );
         }
@@ -94783,7 +94632,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       backgroundColor: '#fff'
     }
   });
-},819,[103,14,12,820,954,945,955]);
+},819,[103,14,12,820,955,945,956]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   Object.defineProperty(exports, "__esModule", {
     value: true
@@ -97752,7 +97601,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       WINDOW_WIDTH = _Dimensions$get.width,
       WINDOW_HEIGHT = _Dimensions$get.height;
 
-  var IS_IPHONE_X = false;
+  var IS_IPHONE_X = !_reactNative.Platform.isPad && !_reactNative.Platform.isTVOS && (WINDOW_HEIGHT === 812 || WINDOW_WIDTH === 812);
 
   var EaseInOut = _reactNative.Easing.inOut(_reactNative.Easing.ease);
 
@@ -97776,7 +97625,13 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
   var getDefaultHeaderHeight = function getDefaultHeaderHeight(isLandscape) {
     {
-      return 56;
+      if (isLandscape && !_reactNative.Platform.isPad) {
+        return 32;
+      } else if (IS_IPHONE_X) {
+        return 88;
+      } else {
+        return 64;
+      }
     }
   };
 
@@ -98038,7 +97893,15 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     }, {
       key: "_reset",
       value: function _reset(resetToIndex, duration) {
-        {
+        if ((0, _ReactNativeFeatures.supportsImprovedSpringAnimation)()) {
+          _reactNative.Animated.spring(this.props.transitionProps.position, {
+            toValue: resetToIndex,
+            stiffness: 5000,
+            damping: 600,
+            mass: 3,
+            useNativeDriver: this.props.transitionProps.position.__isNative
+          }).start();
+        } else {
           _reactNative.Animated.timing(this.props.transitionProps.position, {
             toValue: resetToIndex,
             duration: duration,
@@ -98074,7 +97937,15 @@ __d(function (global, _require, module, exports, _dependencyMap) {
           }
         };
 
-        {
+        if ((0, _ReactNativeFeatures.supportsImprovedSpringAnimation)()) {
+          _reactNative.Animated.spring(position, {
+            toValue: toValue,
+            stiffness: 5000,
+            damping: 600,
+            mass: 3,
+            useNativeDriver: position.__isNative
+          }).start(onCompleteAnimation);
+        } else {
           _reactNative.Animated.timing(position, {
             toValue: toValue,
             duration: duration,
@@ -98109,7 +97980,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
             scene = _props$transitionProp2.scene,
             scenes = _props$transitionProp2.scenes;
         var options = scene.descriptor.options;
-        var gesturesEnabled = typeof options.gesturesEnabled === 'boolean' ? options.gesturesEnabled : false;
+        var gesturesEnabled = typeof options.gesturesEnabled === 'boolean' ? options.gesturesEnabled : true;
         var responder = !gesturesEnabled ? null : this._panResponder;
         var handlers = gesturesEnabled ? responder.panHandlers : {};
         var containerStyle = [styles.container, this._getTransitionConfig().containerStyle];
@@ -98137,9 +98008,10 @@ __d(function (global, _require, module, exports, _dependencyMap) {
           return this.props.headerMode;
         }
 
-        {
+        if (this.props.mode === 'modal') {
           return 'screen';
         }
+
         return 'float';
       }
     }, {
@@ -98154,15 +98026,16 @@ __d(function (global, _require, module, exports, _dependencyMap) {
         }
 
         {
-          return 'left';
+          return 'center';
         }
       }
     }, {
       key: "_getHeaderTransitionPreset",
       value: function _getHeaderTransitionPreset() {
-        {
+        if (this._getHeaderMode() === 'screen') {
           return 'fade-in-place';
         }
+
         var headerTransitionPreset = this.props.headerTransitionPreset;
 
         if (headerTransitionPreset) {
@@ -98268,7 +98141,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   function getAccessibilityProps(isActive) {
     {
       return {
-        importantForAccessibility: isActive ? 'yes' : 'no-hide-descendants'
+        accessibilityElementsHidden: !isActive
       };
     }
   }
@@ -98506,10 +98379,10 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
   var _HeaderStyleInterpolator2 = babelHelpers.interopRequireDefault(_HeaderStyleInterpolator);
 
-  var APPBAR_HEIGHT = 56;
-  var STATUSBAR_HEIGHT = 0;
-  var TITLE_OFFSET_CENTER_ALIGN = 56;
-  var TITLE_OFFSET_LEFT_ALIGN = 56;
+  var APPBAR_HEIGHT = 44;
+  var STATUSBAR_HEIGHT = 20;
+  var TITLE_OFFSET_CENTER_ALIGN = 70;
+  var TITLE_OFFSET_LEFT_ALIGN = 20;
 
   var getTitleOffsets = function getTitleOffsets(layoutPreset, forceBackTitle, hasLeftComponent, hasRightComponent) {
     if (layoutPreset === 'left') {
@@ -98543,7 +98416,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   };
 
   var getAppBarHeight = function getAppBarHeight(isLandscape) {
-    return 56;
+    return isLandscape && !_reactNative.Platform.isPad ? 32 : 44;
   };
 
   var Header = (_temp2 = _class = function (_React$PureComponent) {
@@ -98898,7 +98771,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
           key: "scene_" + props.scene.key
         };
 
-        if (options.headerLeft || options.headerBackImage || true || transitionPreset !== 'uikit') {
+        if (options.headerLeft || options.headerBackImage || false || transitionPreset !== 'uikit') {
           return _react2.default.createElement(
             _reactNative.View,
             wrapperProps,
@@ -99002,7 +98875,9 @@ __d(function (global, _require, module, exports, _dependencyMap) {
         return _react2.default.createElement(
           _reactNative.Animated.View,
           {
-            style: [this.props.layoutInterpolator(this.props), null]
+            style: [this.props.layoutInterpolator(this.props), !options.headerTransparent ? {
+              backgroundColor: safeHeaderStyle.backgroundColor || DEFAULT_BACKGROUND_COLOR
+            } : null]
           },
           _react2.default.createElement(
             _reactNavigation.SafeAreaView,
@@ -99050,13 +98925,8 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   var platformContainerStyles = void 0;
   {
     platformContainerStyles = {
-      shadowColor: 'black',
-      shadowOpacity: 0.1,
-      shadowRadius: _reactNative.StyleSheet.hairlineWidth,
-      shadowOffset: {
-        height: _reactNative.StyleSheet.hairlineWidth
-      },
-      elevation: 4
+      borderBottomWidth: _reactNative.StyleSheet.hairlineWidth,
+      borderBottomColor: '#A7A7AA'
     };
   }
   var DEFAULT_BACKGROUND_COLOR = '#FFF';
@@ -99159,8 +99029,8 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
   var styles = _reactNative.StyleSheet.create({
     title: {
-      fontSize: 20,
-      fontWeight: '500',
+      fontSize: 17,
+      fontWeight: '600',
       color: 'rgba(0, 0, 0, .9)',
       marginHorizontal: 16
     }
@@ -99257,7 +99127,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
             truncatedTitle = _props2.truncatedTitle;
         var renderTruncated = this.state.initialTextWidth && width ? this.state.initialTextWidth > width : false;
         var backButtonTitle = renderTruncated ? truncatedTitle : title;
-        var titleDefaultsToDisabled = layoutPreset === 'left' || true || typeof backButtonTitle !== 'string';
+        var titleDefaultsToDisabled = layoutPreset === 'left' || false || typeof backButtonTitle !== 'string';
 
         if (titleDefaultsToDisabled && !backTitleVisible) {
           return null;
@@ -99309,20 +99179,14 @@ __d(function (global, _require, module, exports, _dependencyMap) {
         );
 
         {
-          return _react2.default.createElement(
-            _reactNative.View,
-            {
-              style: styles.androidButtonWrapper
-            },
-            button
-          );
+          return button;
         }
       }
     }]);
     return HeaderBackButton;
   }(_react2.default.PureComponent), _class.defaultProps = {
     pressColorAndroid: 'rgba(0, 0, 0, .32)',
-    tintColor: undefined,
+    tintColor: '#037aff',
     truncatedTitle: 'Back'
   }, _temp2);
 
@@ -99341,15 +99205,19 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       paddingRight: 10
     },
     icon: {
-      height: 24,
-      width: 24,
-      margin: 3,
+      height: 21,
+      width: 13,
+      marginLeft: 9,
+      marginRight: 22,
+      marginVertical: 12,
       resizeMode: 'contain',
       transform: [{
         scaleX: _reactNative.I18nManager.isRTL ? -1 : 1
       }]
     },
-    iconWithTitle: {}
+    iconWithTitle: {
+      marginRight: 6
+    }
   });
 
   exports.default = HeaderBackButton;
@@ -99380,26 +99248,6 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     babelHelpers.createClass(TouchableItem, [{
       key: "render",
       value: function render() {
-        if (_reactNative.Platform.Version >= ANDROID_VERSION_LOLLIPOP) {
-          var _props = this.props,
-              style = _props.style,
-              rest = babelHelpers.objectWithoutProperties(_props, ["style"]);
-          return _react2.default.createElement(
-            _reactNative.TouchableNativeFeedback,
-            babelHelpers.extends({}, rest, {
-              style: null,
-              background: _reactNative.TouchableNativeFeedback.Ripple(this.props.pressColor, this.props.borderless)
-            }),
-            _react2.default.createElement(
-              _reactNative.View,
-              {
-                style: style
-              },
-              _react2.default.Children.only(this.props.children)
-            )
-          );
-        }
-
         return _react2.default.createElement(
           _reactNative.TouchableOpacity,
           this.props,
@@ -99418,13 +99266,13 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   module.exports = _require(_dependencyMap[0]).registerAsset({
     "__packager_asset": true,
     "httpServerLocation": "/assets/node_modules/react-navigation-stack/dist/views/assets",
-    "width": 24,
-    "height": 24,
+    "width": 12,
+    "height": 21,
     "scales": [1, 1.5, 2, 3, 4],
-    "hash": "a364dc7a784101f7c8f6791c7b4514ce",
+    "hash": "c90fb4585dd852a3d67af39baf923f67",
     "name": "back-icon",
     "type": "png",
-    "fileHashes": ["778ffc9fe8773a878e9c30a6304784de", "376d6a4c7f622917c39feb23671ef71d", "c79c3606a1cf168006ad3979763c7e0c", "02bc1fa7c0313217bde2d65ccbff40c9", "35ba0eaec5a4f5ed12ca16fabeae451d"]
+    "fileHashes": ["7d40544b395c5949f4646f5e150fe020", "cdd04e13d4ec83ff0cd13ec8dabdc341", "a132ecc4ba5c1517ff83c0fb321bc7fc", "0ea69b5077e7c4696db85dbcba75b0e1", "f5b790e2ac193b3d41015edb3551f9b8"]
   });
 },858,[153]);
 __d(function (global, _require, module, exports, _dependencyMap) {
@@ -99960,14 +99808,6 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   };
 
   function defaultTransitionConfig(transitionProps, prevTransitionProps, isModal) {
-    {
-      if (prevTransitionProps && transitionProps.index < prevTransitionProps.index) {
-        return FadeOutToBottomAndroid;
-      }
-
-      return FadeInFromBottomAndroid;
-    }
-
     if (isModal) {
       return ModalSlideFromBottomIOS;
     }
@@ -101475,7 +101315,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       var smallerAxisSize = Math.min(height, width);
       var isLandscape = width > height;
       var isTablet = smallerAxisSize >= 600;
-      var appBarHeight = 56;
+      var appBarHeight = isLandscape ? 32 : 44;
       var maxWidth = isTablet ? 320 : 280;
       return Math.min(smallerAxisSize - appBarHeight, maxWidth);
     },
@@ -101818,16 +101658,488 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   }(_react2.default.PureComponent);
 
   exports.default = DrawerView;
-},883,[103,14,993,821,887,882]);
+},883,[103,14,884,821,887,882]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
 
+  var _reactNativeDrawerLayout = _require(_dependencyMap[0]);
+
+  var _reactNativeDrawerLayout2 = _interopRequireDefault(_reactNativeDrawerLayout);
+
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
+
+  exports.default = _reactNativeDrawerLayout2.default;
+},884,[885]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.default = undefined;
+
+  var _extends = Object.assign || function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+
+  var _createClass = function () {
+    function defineProperties(target, props) {
+      for (var i = 0; i < props.length; i++) {
+        var descriptor = props[i];
+        descriptor.enumerable = descriptor.enumerable || false;
+        descriptor.configurable = true;
+        if ("value" in descriptor) descriptor.writable = true;
+        Object.defineProperty(target, descriptor.key, descriptor);
+      }
+    }
+
+    return function (Constructor, protoProps, staticProps) {
+      if (protoProps) defineProperties(Constructor.prototype, protoProps);
+      if (staticProps) defineProperties(Constructor, staticProps);
+      return Constructor;
+    };
+  }();
+
+  var _class, _temp;
+
+  var _react = _require(_dependencyMap[0]);
+
+  var _react2 = _interopRequireDefault(_react);
+
+  var _reactNativeDismissKeyboard = _require(_dependencyMap[1]);
+
+  var _reactNativeDismissKeyboard2 = _interopRequireDefault(_reactNativeDismissKeyboard);
+
+  var _reactNative = _require(_dependencyMap[2]);
+
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _possibleConstructorReturn(self, call) {
+    if (!self) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return call && (typeof call === "object" || typeof call === "function") ? call : self;
+  }
+
+  function _inherits(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+  }
+
+  var MIN_SWIPE_DISTANCE = 3;
+  var DEVICE_WIDTH = parseFloat(_reactNative.Dimensions.get('window').width);
+  var THRESHOLD = DEVICE_WIDTH / 2;
+  var VX_MAX = 0.1;
+  var IDLE = 'Idle';
+  var DRAGGING = 'Dragging';
+  var SETTLING = 'Settling';
+  var DrawerLayout = (_temp = _class = function (_Component) {
+    _inherits(DrawerLayout, _Component);
+
+    function DrawerLayout(props, context) {
+      _classCallCheck(this, DrawerLayout);
+
+      var _this = _possibleConstructorReturn(this, (DrawerLayout.__proto__ || Object.getPrototypeOf(DrawerLayout)).call(this, props, context));
+
+      _this._onOverlayClick = function (e) {
+        e.stopPropagation();
+
+        if (!_this._isLockedClosed() && !_this._isLockedOpen()) {
+          _this.closeDrawer();
+        }
+      };
+
+      _this._emitStateChanged = function (newState) {
+        if (_this.props.onDrawerStateChanged) {
+          _this.props.onDrawerStateChanged(newState);
+        }
+      };
+
+      _this.openDrawer = function () {
+        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+        _this._emitStateChanged(SETTLING);
+
+        _reactNative.Animated.spring(_this.state.openValue, _extends({
+          toValue: 1,
+          bounciness: 0,
+          restSpeedThreshold: 0.1,
+          useNativeDriver: _this.props.useNativeAnimations
+        }, options)).start(function () {
+          if (_this.props.onDrawerOpen) {
+            _this.props.onDrawerOpen();
+          }
+
+          _this._emitStateChanged(IDLE);
+        });
+      };
+
+      _this.closeDrawer = function () {
+        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+        _this._emitStateChanged(SETTLING);
+
+        _reactNative.Animated.spring(_this.state.openValue, _extends({
+          toValue: 0,
+          bounciness: 0,
+          restSpeedThreshold: 1,
+          useNativeDriver: _this.props.useNativeAnimations
+        }, options)).start(function () {
+          if (_this.props.onDrawerClose) {
+            _this.props.onDrawerClose();
+          }
+
+          _this._emitStateChanged(IDLE);
+        });
+      };
+
+      _this._handleDrawerOpen = function () {
+        if (_this.props.onDrawerOpen) {
+          _this.props.onDrawerOpen();
+        }
+      };
+
+      _this._handleDrawerClose = function () {
+        if (_this.props.onDrawerClose) {
+          _this.props.onDrawerClose();
+        }
+      };
+
+      _this._shouldSetPanResponder = function (e, _ref) {
+        var moveX = _ref.moveX,
+            dx = _ref.dx,
+            dy = _ref.dy;
+
+        if (!dx || !dy || Math.abs(dx) < MIN_SWIPE_DISTANCE) {
+          return false;
+        }
+
+        if (_this._isLockedClosed() || _this._isLockedOpen()) {
+          return false;
+        }
+
+        if (_this.getDrawerPosition() === 'left') {
+          var overlayArea = DEVICE_WIDTH - (DEVICE_WIDTH - _this.props.drawerWidth);
+
+          if (_this._lastOpenValue === 1) {
+            if (dx < 0 && Math.abs(dx) > Math.abs(dy) * 3 || moveX > overlayArea) {
+              _this._isClosing = true;
+              _this._closingAnchorValue = _this._getOpenValueForX(moveX);
+              return true;
+            }
+          } else {
+            if (moveX <= 35 && dx > 0) {
+              _this._isClosing = false;
+              return true;
+            }
+
+            return false;
+          }
+        } else {
+          var _overlayArea = DEVICE_WIDTH - _this.props.drawerWidth;
+
+          if (_this._lastOpenValue === 1) {
+            if (dx > 0 && Math.abs(dx) > Math.abs(dy) * 3 || moveX < _overlayArea) {
+              _this._isClosing = true;
+              _this._closingAnchorValue = _this._getOpenValueForX(moveX);
+              return true;
+            }
+          } else {
+            if (moveX >= DEVICE_WIDTH - 35 && dx < 0) {
+              _this._isClosing = false;
+              return true;
+            }
+
+            return false;
+          }
+        }
+      };
+
+      _this._panResponderGrant = function () {
+        _this._emitStateChanged(DRAGGING);
+      };
+
+      _this._panResponderMove = function (e, _ref2) {
+        var moveX = _ref2.moveX;
+
+        var openValue = _this._getOpenValueForX(moveX);
+
+        if (_this._isClosing) {
+          openValue = 1 - (_this._closingAnchorValue - openValue);
+        }
+
+        if (openValue > 1) {
+          openValue = 1;
+        } else if (openValue < 0) {
+          openValue = 0;
+        }
+
+        _this.state.openValue.setValue(openValue);
+      };
+
+      _this._panResponderRelease = function (e, _ref3) {
+        var moveX = _ref3.moveX,
+            vx = _ref3.vx;
+        var previouslyOpen = _this._isClosing;
+        var isWithinVelocityThreshold = vx < VX_MAX && vx > -VX_MAX;
+
+        if (_this.getDrawerPosition() === 'left') {
+          if (vx > 0 && moveX > THRESHOLD || vx >= VX_MAX || isWithinVelocityThreshold && previouslyOpen && moveX > THRESHOLD) {
+            _this.openDrawer({
+              velocity: vx
+            });
+          } else if (vx < 0 && moveX < THRESHOLD || vx < -VX_MAX || isWithinVelocityThreshold && !previouslyOpen) {
+            _this.closeDrawer({
+              velocity: vx
+            });
+          } else if (previouslyOpen) {
+            _this.openDrawer();
+          } else {
+            _this.closeDrawer();
+          }
+        } else {
+          if (vx < 0 && moveX < THRESHOLD || vx <= -VX_MAX || isWithinVelocityThreshold && previouslyOpen && moveX < THRESHOLD) {
+            _this.openDrawer({
+              velocity: -1 * vx
+            });
+          } else if (vx > 0 && moveX > THRESHOLD || vx > VX_MAX || isWithinVelocityThreshold && !previouslyOpen) {
+            _this.closeDrawer({
+              velocity: -1 * vx
+            });
+          } else if (previouslyOpen) {
+            _this.openDrawer();
+          } else {
+            _this.closeDrawer();
+          }
+        }
+      };
+
+      _this._isLockedClosed = function () {
+        return _this.props.drawerLockMode === 'locked-closed' && !_this.state.drawerShown;
+      };
+
+      _this._isLockedOpen = function () {
+        return _this.props.drawerLockMode === 'locked-open' && _this.state.drawerShown;
+      };
+
+      _this.state = {
+        accessibilityViewIsModal: false,
+        drawerShown: false,
+        openValue: new _reactNative.Animated.Value(0)
+      };
+      return _this;
+    }
+
+    _createClass(DrawerLayout, [{
+      key: 'getDrawerPosition',
+      value: function getDrawerPosition() {
+        var drawerPosition = this.props.drawerPosition;
+        var rtl = _reactNative.I18nManager.isRTL;
+        return rtl ? drawerPosition === 'left' ? 'right' : 'left' : drawerPosition;
+      }
+    }, {
+      key: 'componentWillMount',
+      value: function componentWillMount() {
+        var _this2 = this;
+
+        var openValue = this.state.openValue;
+        openValue.addListener(function (_ref4) {
+          var value = _ref4.value;
+          var drawerShown = value > 0;
+          var accessibilityViewIsModal = drawerShown;
+
+          if (drawerShown !== _this2.state.drawerShown) {
+            _this2.setState({
+              drawerShown: drawerShown,
+              accessibilityViewIsModal: accessibilityViewIsModal
+            });
+          }
+
+          if (_this2.props.keyboardDismissMode === 'on-drag') {
+            (0, _reactNativeDismissKeyboard2.default)();
+          }
+
+          _this2._lastOpenValue = value;
+
+          if (_this2.props.onDrawerSlide) {
+            _this2.props.onDrawerSlide({
+              nativeEvent: {
+                offset: value
+              }
+            });
+          }
+        });
+        this._panResponder = _reactNative.PanResponder.create({
+          onMoveShouldSetPanResponder: this._shouldSetPanResponder,
+          onPanResponderGrant: this._panResponderGrant,
+          onPanResponderMove: this._panResponderMove,
+          onPanResponderTerminationRequest: function onPanResponderTerminationRequest() {
+            return false;
+          },
+          onPanResponderRelease: this._panResponderRelease,
+          onPanResponderTerminate: function onPanResponderTerminate() {}
+        });
+      }
+    }, {
+      key: 'render',
+      value: function render() {
+        var _state = this.state,
+            accessibilityViewIsModal = _state.accessibilityViewIsModal,
+            drawerShown = _state.drawerShown,
+            openValue = _state.openValue;
+        var _props = this.props,
+            drawerBackgroundColor = _props.drawerBackgroundColor,
+            drawerWidth = _props.drawerWidth,
+            drawerPosition = _props.drawerPosition;
+        var dynamicDrawerStyles = {
+          backgroundColor: drawerBackgroundColor,
+          width: drawerWidth,
+          left: drawerPosition === 'left' ? 0 : null,
+          right: drawerPosition === 'right' ? 0 : null
+        };
+        var outputRange = void 0;
+
+        if (this.getDrawerPosition() === 'left') {
+          outputRange = [-drawerWidth, 0];
+        } else {
+          outputRange = [drawerWidth, 0];
+        }
+
+        var drawerTranslateX = openValue.interpolate({
+          inputRange: [0, 1],
+          outputRange: outputRange,
+          extrapolate: 'clamp'
+        });
+        var animatedDrawerStyles = {
+          transform: [{
+            translateX: drawerTranslateX
+          }]
+        };
+        var overlayOpacity = openValue.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0, 0.7],
+          extrapolate: 'clamp'
+        });
+        var animatedOverlayStyles = {
+          opacity: overlayOpacity
+        };
+        var pointerEvents = drawerShown ? 'auto' : 'none';
+        return _react2.default.createElement(_reactNative.View, _extends({
+          style: {
+            flex: 1,
+            backgroundColor: 'transparent'
+          }
+        }, this._panResponder.panHandlers), _react2.default.createElement(_reactNative.Animated.View, {
+          style: styles.main
+        }, this.props.children), _react2.default.createElement(_reactNative.TouchableWithoutFeedback, {
+          pointerEvents: pointerEvents,
+          onPress: this._onOverlayClick
+        }, _react2.default.createElement(_reactNative.Animated.View, {
+          pointerEvents: pointerEvents,
+          style: [styles.overlay, animatedOverlayStyles]
+        })), _react2.default.createElement(_reactNative.Animated.View, {
+          accessibilityViewIsModal: accessibilityViewIsModal,
+          style: [styles.drawer, dynamicDrawerStyles, animatedDrawerStyles]
+        }, this.props.renderNavigationView()));
+      }
+    }, {
+      key: '_getOpenValueForX',
+      value: function _getOpenValueForX(x) {
+        var drawerWidth = this.props.drawerWidth;
+
+        if (this.getDrawerPosition() === 'left') {
+          return x / drawerWidth;
+        }
+
+        return (DEVICE_WIDTH - x) / drawerWidth;
+      }
+    }]);
+
+    return DrawerLayout;
+  }(_react.Component), _class.defaultProps = {
+    drawerWidth: 0,
+    drawerPosition: 'left',
+    useNativeAnimations: false
+  }, _class.positions = {
+    Left: 'left',
+    Right: 'right'
+  }, _temp);
+  exports.default = DrawerLayout;
+
+  var styles = _reactNative.StyleSheet.create({
+    drawer: {
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      zIndex: 1001
+    },
+    main: {
+      flex: 1,
+      zIndex: 0
+    },
+    overlay: {
+      backgroundColor: '#000',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      bottom: 0,
+      right: 0,
+      zIndex: 1000
+    }
+  });
+},885,[103,886,14]);
+__d(function (global, _require, module, exports, _dependencyMap) {
+  Object.defineProperty(exports, '__esModule', {
+    value: true
+  });
+  exports.default = dismissKeyboard;
+
   var _reactNative = _require(_dependencyMap[0]);
 
-  exports.default = _reactNative.DrawerLayoutAndroid;
-},993,[14]);
+  var TextInputState = _reactNative.TextInput.State;
+
+  function dismissKeyboard() {
+    TextInputState.blurTextInput(TextInputState.currentlyFocusedField());
+  }
+
+  module.exports = exports.default;
+},886,[14]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   Object.defineProperty(exports, "__esModule", {
     value: true
@@ -102156,26 +102468,6 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     babelHelpers.createClass(TouchableItem, [{
       key: "render",
       value: function render() {
-        if (_reactNative.Platform.Version >= ANDROID_VERSION_LOLLIPOP) {
-          var _props = this.props,
-              style = _props.style,
-              rest = babelHelpers.objectWithoutProperties(_props, ["style"]);
-          return _react2.default.createElement(
-            _reactNative.TouchableNativeFeedback,
-            babelHelpers.extends({}, rest, {
-              style: null,
-              background: _reactNative.TouchableNativeFeedback.Ripple(this.props.pressColor, this.props.borderless)
-            }),
-            _react2.default.createElement(
-              _reactNative.View,
-              {
-                style: style
-              },
-              _react2.default.Children.only(this.props.children)
-            )
-          );
-        }
-
         return _react2.default.createElement(
           _reactNative.TouchableOpacity,
           this.props,
@@ -102266,7 +102558,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   createTabNavigator.Presets = {
     iOSBottomTabs: Presets.iOSBottomTabs,
     AndroidTopTabs: Presets.AndroidTopTabs,
-    Default: Presets.AndroidTopTabs
+    Default: Presets.iOSBottomTabs
   };
   exports.default = createTabNavigator;
 },892,[103,14,821,893,904,906]);
@@ -102468,10 +102760,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   }(_react2.default.PureComponent), _class.defaultProps = {
     lazy: true,
     removedClippedSubviews: true,
-    initialLayout: {
-      width: 1,
-      height: 0
-    }
+    initialLayout: undefined
   }, _temp2);
   exports.default = TabView;
 
@@ -102535,7 +102824,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
   var TabViewPager = void 0;
 
-  switch ("android") {
+  switch ("ios") {
     case 'android':
       TabViewPager = _require(_dependencyMap[4]).default;
       break;
@@ -103251,9 +103540,6 @@ __d(function (global, _require, module, exports, _dependencyMap) {
         var _this$props$swipeVelo = _this.props.swipeVelocityThreshold,
             swipeVelocityThreshold = _this$props$swipeVelo === undefined ? 0.15 : _this$props$swipeVelo;
         _this.props.onSwipeEnd && _this.props.onSwipeEnd();
-        {
-          swipeVelocityThreshold /= 1000000;
-        }
         var currentIndex = typeof _this._pendingIndex === 'number' ? _this._pendingIndex : _this._currentIndex;
         var nextIndex = currentIndex;
 
@@ -104105,7 +104391,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       shadowOffset: {
         height: _reactNative.StyleSheet.hairlineWidth
       },
-      zIndex: 0
+      zIndex: 1
     },
     tabContent: {
       flexDirection: 'row',
@@ -104191,23 +104477,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
             pressColor = _props.pressColor,
             borderless = _props.borderless,
             rest = babelHelpers.objectWithoutProperties(_props, ["style", "pressOpacity", "pressColor", "borderless"]);
-
-        if (_reactNative.Platform.Version >= LOLLIPOP) {
-          return React.createElement(
-            _reactNative.TouchableNativeFeedback,
-            babelHelpers.extends({}, rest, {
-              onPress: this._handlePress,
-              background: _reactNative.TouchableNativeFeedback.Ripple(pressColor, borderless)
-            }),
-            React.createElement(
-              _reactNative.View,
-              {
-                style: style
-              },
-              React.Children.only(this.props.children)
-            )
-          );
-        } else {
+        {
           return React.createElement(
             _reactNative.TouchableOpacity,
             babelHelpers.extends({}, rest, {
@@ -104563,7 +104833,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   var _TabBarIcon2 = babelHelpers.interopRequireDefault(_TabBarIcon);
 
   var majorVersion = parseInt(_reactNative.Platform.Version, 10);
-  var isIos = false;
+  var isIos = true;
   var isIOS11 = majorVersion >= 11 && isIos;
   var defaultMaxTabBarItemWidth = 125;
   var TabBarBottom = (_temp2 = _class = function (_React$PureComponent) {
@@ -105310,7 +105580,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   var _withDimensions2 = babelHelpers.interopRequireDefault(_withDimensions);
 
   var majorVersion = parseInt(_reactNative.Platform.Version, 10);
-  var isIos = false;
+  var isIos = true;
   var isIOS11 = majorVersion >= 11 && isIos;
   var DEFAULT_MAX_TAB_ITEM_WIDTH = 125;
 
@@ -105764,6 +106034,72 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   }
 },912,[103,14,913]);
 __d(function (global, _require, module, exports, _dependencyMap) {
+    'use strict';
+
+    var REACT_STATICS = {
+        childContextTypes: true,
+        contextTypes: true,
+        defaultProps: true,
+        displayName: true,
+        getDefaultProps: true,
+        getDerivedStateFromProps: true,
+        mixins: true,
+        propTypes: true,
+        type: true
+    };
+    var KNOWN_STATICS = {
+        name: true,
+        length: true,
+        prototype: true,
+        caller: true,
+        callee: true,
+        arguments: true,
+        arity: true
+    };
+    var defineProperty = Object.defineProperty;
+    var getOwnPropertyNames = Object.getOwnPropertyNames;
+    var getOwnPropertySymbols = Object.getOwnPropertySymbols;
+    var getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+    var getPrototypeOf = Object.getPrototypeOf;
+    var objectPrototype = getPrototypeOf && getPrototypeOf(Object);
+
+    function hoistNonReactStatics(targetComponent, sourceComponent, blacklist) {
+        if (typeof sourceComponent !== 'string') {
+            if (objectPrototype) {
+                var inheritedComponent = getPrototypeOf(sourceComponent);
+
+                if (inheritedComponent && inheritedComponent !== objectPrototype) {
+                    hoistNonReactStatics(targetComponent, inheritedComponent, blacklist);
+                }
+            }
+
+            var keys = getOwnPropertyNames(sourceComponent);
+
+            if (getOwnPropertySymbols) {
+                keys = keys.concat(getOwnPropertySymbols(sourceComponent));
+            }
+
+            for (var i = 0; i < keys.length; ++i) {
+                var key = keys[i];
+
+                if (!REACT_STATICS[key] && !KNOWN_STATICS[key] && (!blacklist || !blacklist[key])) {
+                    var descriptor = getOwnPropertyDescriptor(sourceComponent, key);
+
+                    try {
+                        defineProperty(targetComponent, key, descriptor);
+                    } catch (e) {}
+                }
+            }
+
+            return targetComponent;
+        }
+
+        return targetComponent;
+    }
+
+    module.exports = hoistNonReactStatics;
+},913,[]);
+__d(function (global, _require, module, exports, _dependencyMap) {
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
@@ -105810,7 +106146,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
           babelHelpers.extends({
             style: [styles.container, style],
             collapsable: false,
-            removeClippedSubviews: true,
+            removeClippedSubviews: !isVisible,
             pointerEvents: isVisible ? 'auto' : 'none'
           }, rest),
           React.createElement(
@@ -106091,10 +106427,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     }]);
     return MaterialTabView;
   }(React.PureComponent), _class.defaultProps = {
-    initialLayout: {
-      width: 1,
-      height: 0
-    },
+    initialLayout: undefined,
     animationEnabled: true,
     lazy: false,
     optimizationsEnabled: false
@@ -106942,7 +107275,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       shadowOffset: {
         height: _reactNative.StyleSheet.hairlineWidth
       },
-      zIndex: 0
+      zIndex: 1
     },
     tabContent: {
       flexDirection: 'row',
@@ -107017,22 +107350,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
             pressColor = _props.pressColor,
             borderless = _props.borderless,
             rest = babelHelpers.objectWithoutProperties(_props, ["style", "pressOpacity", "pressColor", "borderless"]);
-
-        if (_reactNative.Platform.Version >= LOLLIPOP) {
-          return React.createElement(
-            _reactNative.TouchableNativeFeedback,
-            babelHelpers.extends({}, rest, {
-              background: _reactNative.TouchableNativeFeedback.Ripple(pressColor, borderless)
-            }),
-            React.createElement(
-              _reactNative.View,
-              {
-                style: style
-              },
-              React.Children.only(this.props.children)
-            )
-          );
-        } else {
+        {
           return React.createElement(
             _reactNative.TouchableOpacity,
             babelHelpers.extends({}, rest, {
@@ -107121,7 +107439,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
   var Pager = void 0;
 
-  switch ("android") {
+  switch ("ios") {
     case 'android':
       Pager = _require(_dependencyMap[1]).default;
       break;
@@ -107588,9 +107906,6 @@ __d(function (global, _require, module, exports, _dependencyMap) {
         var _this$props$swipeVelo = _this.props.swipeVelocityThreshold,
             swipeVelocityThreshold = _this$props$swipeVelo === undefined ? 0.15 : _this$props$swipeVelo;
         _this.props.onSwipeEnd && _this.props.onSwipeEnd();
-        {
-          swipeVelocityThreshold /= 1000000;
-        }
         var currentIndex = typeof _this._pendingIndex === 'number' ? _this._pendingIndex : _this._currentIndex;
         var nextIndex = currentIndex;
 
@@ -108773,11 +109088,11 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       minor = _ref$minor === undefined ? 0 : _ref$minor;
 
   var isIPhoneX = function () {
-    return D_HEIGHT === XSMAX_HEIGHT && D_WIDTH === XSMAX_WIDTH || D_HEIGHT === XSMAX_WIDTH && D_WIDTH === XSMAX_HEIGHT;
+    return D_HEIGHT === X_HEIGHT && D_WIDTH === X_WIDTH || D_HEIGHT === X_WIDTH && D_WIDTH === X_HEIGHT || D_HEIGHT === XSMAX_HEIGHT && D_WIDTH === XSMAX_WIDTH || D_HEIGHT === XSMAX_WIDTH && D_WIDTH === XSMAX_HEIGHT;
   }();
 
   var isIPad = function () {
-    return false;
+    if (isIPhoneX) return false;
 
     if (D_HEIGHT > D_WIDTH && D_WIDTH < PAD_WIDTH) {
       return false;
@@ -108795,14 +109110,6 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   var statusBarHeight = function statusBarHeight(isLandscape) {
     if (_customStatusBarHeight !== null) {
       return _customStatusBarHeight;
-    }
-
-    {
-      if (global.Expo) {
-        return global.Expo.Constants.statusBarHeight;
-      } else {
-        return 0;
-      }
     }
 
     if (isIPhoneX) {
@@ -109297,7 +109604,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
           {
             style: styles.container,
             collapsable: false,
-            removeClippedSubviews: removeClippedSubviews
+            removeClippedSubviews: !isFocused && removeClippedSubviews
           },
           _react2.default.createElement(
             _reactNative.View,
@@ -109661,8 +109968,13 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
   var _SettingsScreen2 = babelHelpers.interopRequireDefault(_SettingsScreen);
 
+  var _BarcodeScannerExample = _require(_dependencyMap[7]);
+
+  var _BarcodeScannerExample2 = babelHelpers.interopRequireDefault(_BarcodeScannerExample);
+
   var HomeStack = (0, _reactNavigation.createStackNavigator)({
-    Home: _HomeScreen2.default
+    Home: _HomeScreen2.default,
+    BarcodeScannerExample: _BarcodeScannerExample2.default
   });
   HomeStack.navigationOptions = {
     tabBarLabel: 'Home',
@@ -109670,7 +109982,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       var focused = _ref.focused;
       return _react2.default.createElement(_TabBarIcon2.default, {
         focused: focused,
-        name: 'md-information-circle'
+        name: "ios-information-circle" + (focused ? '' : '-outline')
       });
     }
   };
@@ -109683,7 +109995,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       var focused = _ref2.focused;
       return _react2.default.createElement(_TabBarIcon2.default, {
         focused: focused,
-        name: 'md-link'
+        name: "ios-link" + (focused ? '' : '-outline')
       });
     }
   };
@@ -109696,7 +110008,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       var focused = _ref3.focused;
       return _react2.default.createElement(_TabBarIcon2.default, {
         focused: focused,
-        name: 'md-options'
+        name: "ios-options" + (focused ? '' : '-outline')
       });
     }
   };
@@ -109705,7 +110017,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     LinksStack: LinksStack,
     SettingsStack: SettingsStack
   });
-},939,[103,14,821,940,942,946,953]);
+},939,[103,14,821,940,942,946,953,954]);
 __d(function (global, _require, module, exports, _dependencyMap) {
   Object.defineProperty(exports, "__esModule", {
     value: true
@@ -109810,6 +110122,8 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     babelHelpers.createClass(HomeScreen, [{
       key: "render",
       value: function render() {
+        var _this2 = this;
+
         return _react2.default.createElement(
           _User.UserProvider,
           {
@@ -109861,6 +110175,22 @@ __d(function (global, _require, module, exports, _dependencyMap) {
                         style: styles.getStartedText
                       },
                       avatar
+                    ),
+                    _react2.default.createElement(
+                      _reactNative.TouchableOpacity,
+                      {
+                        onPress: function onPress() {
+                          return _this2.props.navigation.navigate('BarcodeScannerExample');
+                        },
+                        style: styles.helpLink
+                      },
+                      _react2.default.createElement(
+                        _reactNative.Text,
+                        {
+                          style: styles.helpLinkText
+                        },
+                        "go to scanner"
+                      )
                     )
                   );
                 }
@@ -110023,7 +110353,12 @@ __d(function (global, _require, module, exports, _dependencyMap) {
       left: 0,
       right: 0
     }, {
-      elevation: 20
+      shadowColor: 'black',
+      shadowOffset: {
+        height: -3
+      },
+      shadowOpacity: 0.1,
+      shadowRadius: 3
     }, {
       alignItems: 'center',
       backgroundColor: '#fbfbfb',
@@ -110739,7 +111074,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 
   var TouchableComponent = void 0;
   {
-    TouchableComponent = _reactNative.Platform.Version <= 20 ? _reactNative.TouchableOpacity : _reactNative.TouchableNativeFeedback;
+    TouchableComponent = _reactNative.TouchableOpacity;
   }
 
   if (TouchableComponent !== _reactNative.TouchableNativeFeedback) {
@@ -110890,6 +111225,109 @@ __d(function (global, _require, module, exports, _dependencyMap) {
   exports.default = SettingsScreen;
 },953,[103,947]);
 __d(function (global, _require, module, exports, _dependencyMap) {
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.default = undefined;
+
+  var _react = _require(_dependencyMap[0]);
+
+  var _react2 = babelHelpers.interopRequireDefault(_react);
+
+  var _reactNative = _require(_dependencyMap[1]);
+
+  var _expo = _require(_dependencyMap[2]);
+
+  var BarcodeScannerExample = function (_React$Component) {
+    babelHelpers.inherits(BarcodeScannerExample, _React$Component);
+
+    function BarcodeScannerExample() {
+      var _ref;
+
+      var _temp, _this, _ret;
+
+      babelHelpers.classCallCheck(this, BarcodeScannerExample);
+
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      return _ret = (_temp = (_this = babelHelpers.possibleConstructorReturn(this, (_ref = BarcodeScannerExample.__proto__ || Object.getPrototypeOf(BarcodeScannerExample)).call.apply(_ref, [this].concat(args))), _this), _this.state = {
+        hasCameraPermission: null
+      }, _this.handleBarCodeScanned = function (_ref2) {
+        var type = _ref2.type,
+            data = _ref2.data;
+        alert("Bar code with type " + type + " and data " + data + " has been scanned!");
+      }, _temp), babelHelpers.possibleConstructorReturn(_this, _ret);
+    }
+
+    babelHelpers.createClass(BarcodeScannerExample, [{
+      key: "componentWillMount",
+      value: function componentWillMount() {
+        var _ref3, status;
+
+        return regeneratorRuntime.async(function componentWillMount$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                _context.next = 2;
+                return regeneratorRuntime.awrap(_expo.Permissions.askAsync(_expo.Permissions.CAMERA));
+
+              case 2:
+                _ref3 = _context.sent;
+                status = _ref3.status;
+                this.setState({
+                  hasCameraPermission: status === 'granted'
+                });
+
+              case 5:
+              case "end":
+                return _context.stop();
+            }
+          }
+        }, null, this);
+      }
+    }, {
+      key: "render",
+      value: function render() {
+        var hasCameraPermission = this.state.hasCameraPermission;
+
+        if (hasCameraPermission === null) {
+          return _react2.default.createElement(
+            _reactNative.Text,
+            null,
+            "Requesting for camera permission"
+          );
+        }
+
+        if (hasCameraPermission === false) {
+          return _react2.default.createElement(
+            _reactNative.Text,
+            null,
+            "No access to camera"
+          );
+        }
+
+        return _react2.default.createElement(
+          _reactNative.View,
+          {
+            style: {
+              flex: 1
+            }
+          },
+          _react2.default.createElement(_expo.BarCodeScanner, {
+            onBarCodeScanned: this.handleBarCodeScanned,
+            style: _reactNative.StyleSheet.absoluteFill
+          })
+        );
+      }
+    }]);
+    return BarcodeScannerExample;
+  }(_react2.default.Component);
+
+  exports.default = BarcodeScannerExample;
+},954,[103,14,12]);
+__d(function (global, _require, module, exports, _dependencyMap) {
   module.exports = _require(_dependencyMap[0]).registerAsset({
     "__packager_asset": true,
     "httpServerLocation": "/assets/assets/images",
@@ -110901,7 +111339,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
     "type": "png",
     "fileHashes": ["a30cd76fa74ee5a0bab5aba37c101416"]
   });
-},954,[153]);
+},955,[153]);
 __d(function (global, _require, module, exports, _dependencyMap) {
 	module.exports = _require(_dependencyMap[0]).registerAsset({
 		"__packager_asset": true,
@@ -110912,7 +111350,7 @@ __d(function (global, _require, module, exports, _dependencyMap) {
 		"type": "ttf",
 		"fileHashes": ["49a79d66bdea2debf1832bf4d7aca127"]
 	});
-},955,[153]);
+},956,[153]);
 require(48);
 require(11);
-//# sourceMappingURL=http://127.0.0.1:19001/node_modules/expo/AppEntry.map?dev=false&hot=false&assetPlugin=%2FUsers%2Fwangyu%2Fmy-projects%2Freact-native%2Ftoolkit%2Fnode_modules%2Fexpo%2Ftools%2FhashAssetFiles&platform=android
+//# sourceMappingURL=http://127.0.0.1:19001/node_modules/expo/AppEntry.map?dev=false&hot=false&assetPlugin=%2FUsers%2Fwangyu%2Fmy-projects%2Freact-native%2Ftoolkit%2Fnode_modules%2Fexpo%2Ftools%2FhashAssetFiles&platform=ios
